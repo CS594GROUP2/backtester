@@ -35,7 +35,7 @@ def main():
 
     for period in valid_periods:
         data = get_price_data(start, end, period, ticker)
-        print(f"Test Pass: Valid Period ({period})")
+        print(f"Test: Valid Period ({period})")
         print(data.head())
         print("\n")
 
@@ -51,7 +51,7 @@ def main():
 
     for period in valid_periods:
         data = get_price_data(start, end, period, ticker)
-        print(f"Test Pass: Valid Period ({period})")
+        print(f"Test: Valid Period ({period})")
         print(data.head())
         print("\n")
 

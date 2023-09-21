@@ -7,7 +7,7 @@ def main():
         # Test invalid period
         start = pd.Timestamp('2023-01-01')
         end = pd.Timestamp('2023-01-10')
-        invalid_period = pd.Timedelta('3T')  # 3 minutes
+        invalid_period = pd.Timedelta( 3, 'm')  # 3 minutes
         ticker = 'AAPL'
         get_price_data(start, end, invalid_period, ticker)
     except ValueError as e:
@@ -23,19 +23,38 @@ def main():
     except ValueError as e:
         print(f"Test: Data from 1800s\n{e}\n")
 
-    valid_periods = ['1m', '1d', '1mo', '3mo', '6mo', '1y']
-    start = pd.Timestamp('2023-01-01')
-    end = pd.Timestamp('2023-12-31')
+    #test intraday time_aggregates
+    valid_periods = [pd.Timedelta( 1 , 'm' )
+                     pd.Timedelta( 5 , 'm' )
+                     pd.Timedelta( 1 , 'h' )
+                    ]
+    start = pd.Timestamp('2022-12-25')
+    end = pd.Timestamp('2022-12-31')
     ticker = 'AAPL'
 
+
     for period in valid_periods:
-        try:
-            data = get_price_data(start, end, period, ticker)
-            print(f"Test: Valid Period ({period})")
-            print(data.head())
-            print("\n")
-        except ValueError as e:
-            print(f"Test: Valid Period ({period})\n{e}\n")
+        data = get_price_data(start, end, period, ticker)
+        print(f"Test Pass: Valid Period ({period})")
+        print(data.head())
+        print("\n")
+
+
+    #test daily time_aggregates
+    valid_periods = [pd.Timedelta( 1 , 'd' )
+                     pd.Timedelta( 5 , 'd' )
+                    ]
+    start = pd.Timestamp('2022-01-01')
+    end = pd.Timestamp('2022-12-31')
+    ticker = 'AAPL'
+
+
+    for period in valid_periods:
+        data = get_price_data(start, end, period, ticker)
+        print(f"Test Pass: Valid Period ({period})")
+        print(data.head())
+        print("\n")
+
 
 if __name__ == '__main__':
     main()

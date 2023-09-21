@@ -1,5 +1,5 @@
 import pandas as pd
-from core import GetData
+from core import Data
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
         # User wants to specify a date range
         start_date = input("Enter the start date (YYYY-MM-DD): ")
         end_date = input("Enter the end date (YYYY-MM-DD): ")
-        period = None
+        interval = None
     else:
         print("Invalid choice. Please choose 'P' for period or 'D' for date range.")
         return
@@ -29,10 +29,10 @@ def main():
         # convert to pandas data types
         start_date = pd.Timestamp(start_date) if start_date else None
         end_date = pd.Timestamp(end_date) if end_date else None
-        period = str(period)
+        interval = str(interval)
 
         # Get price data using the GetData class
-        data = GetData.get_price_data(start=start_date, end=end_date, period=period, ticker=ticker)
+        data = Data.get_price_data(start=start_date, end=end_date, interval=interval, ticker=ticker)
 
         # Display the retrieved data
         print("Price data for {} from {} to {}:".format(ticker, start_date, end_date))
@@ -41,5 +41,14 @@ def main():
         print("An error occurred:", str(e))
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+start_date = pd.Timestamp("2021-01-01")
+end_date = pd.Timestamp("2021-12-31")
+interval = pd.Timedelta("1d")
+
+market_data = Data()
+data = market_data.get_price_data(start=start_date, end=end_date, interval=interval, ticker="AAPL")
+
+print(data)

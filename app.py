@@ -49,6 +49,7 @@ end_date = pd.Timestamp("2021-12-31")
 interval = pd.Timedelta("1d")
 
 market_data = Data()
-data = market_data.get_price_data(start=start_date, end=end_date, interval=interval, ticker="AAPL")
+data = market_data.get_price_data(start=start_date, end=end_date, interval=interval, ticker="AAPLAA")
 
 print(data)
+print(data.columns)

@@ -38,7 +38,22 @@ class TimedeltaConverter:
 class Data:
     def __init__(self) -> None:
         self.timedelta_converter = TimedeltaConverter()
+        self.valid_intervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo']
     
+    def validate_interval(self, interval: pd.Timedelta) -> None:
+        if interval not in self.valid_intervals:
+            raise ValueError(f"Invalid interval: {interval}")
+
+    def validate_date(self, date: pd.Timestamp) -> None:
+        if date > pd.Timestamp.now():
+            raise ValueError(f"Invalid date: {date}")
+        if date < pd.Timestamp('1950-01-01'):
+            raise ValueError(f"Invalid date: {date}")
+    
+    def validate_start_end(self, start: pd.Timestamp, end: pd.Timestamp) -> None:
+        if start > end:
+            raise ValueError(f"Invalid start/end dates: {start} > {end}")
+
     def get_price_data(self, start: pd.Timestamp, end: pd.Timestamp, interval: pd.Timedelta, ticker: str) -> pd.DataFrame:
         """
         Gets price data for a given symbol, start and end date, and period.
@@ -47,19 +62,25 @@ class Data:
         start: The start date for the price data.
         end: The end date for the price data.
         interval: The period (frequency/interval) for the price data.
-                [1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo]
-
+        ticker: The ticker symbol for the stock.
         Returns:
         A Pandas DataFrame containing the price data, with columns:
             Open, High, Low, Close, Volume, Symbol, Period, Start, End
         """
+        try:
+            # Get the price data from Yahoo Finance.
+            interval = self.timedelta_converter.to_string(interval)
 
-        # Get the price data from Yahoo Finance.
-        ticker = yf.Ticker(ticker)
-        interval = self.timedelta_converter.to_string(interval)
+            self.validate_interval(interval)
+            self.validate_date(start)
+            self.validate_date(end)
+            self.validate_start_end(start, end)
 
-        df = ticker.history(start=start, end=end, interval=interval)
+            ticker = yf.Ticker(ticker)
 
+            df = ticker.history(start=start, end=end, interval=interval)
+        except:
+            raise ValueError("Error retrieving price data from Yahoo Finance.")
         
         # Check for NaN's in the price data.
         if df.isnull().values.any():

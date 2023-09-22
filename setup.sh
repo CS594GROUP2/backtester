@@ -10,6 +10,6 @@ source env/bin/activate
 pip install -r requirements.txt
 
 # Deactivate the virtual environment
-# deactivate
+deactivate
 
-echo "Python environment created successfully: my_env"
+echo "Python environment created successfully: env"

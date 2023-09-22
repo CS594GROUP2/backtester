@@ -1,3 +1,10 @@
+# Folders
+.vscode/
+.idea/
+my_env/
+env/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

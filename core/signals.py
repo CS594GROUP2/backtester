@@ -9,7 +9,7 @@ class SignalGenerator:
         pass
 
 
-    def above_below( price_data: pd.DataFrame, target: pd.DataFrame, metadata: pd.DataFrame) -> list:
+    def above_below( price_data: pd.DataFrame, target: pd.DataFrame, metadata: pd.DataFrame, column='Close') -> list:
 
     
     """
@@ -20,8 +20,9 @@ class SignalGenerator:
     
 
     Args:
-    price_data: A Pandas DataFrame containing the price data and metadata
+    price_data: A Pandas DataFrame containing the price data in OHLCV format note the close will be taken
     target: A Pandas DataFrame containing the target data crossover values
+    metadata: A Pandas DataFrame containing the metadata for the price data will append the target metadata and return
 
     Returns:
     A list containing a Numpy array of trading signals
@@ -30,7 +31,7 @@ class SignalGenerator:
     """
 
     # extract the closing column from the price data
-    price_data = price_data['Close']
+    price_data = price_data[column]
 
     # convert the price data to a numpy array
     price_data = price_data.to_numpy()

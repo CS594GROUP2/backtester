@@ -37,6 +37,18 @@ class SignalGenerator:
         price_data = price_data.to_numpy()
 
         # convert the target data to a numpy array
+        # check if the target is a dataframe
+        if isinstance(target, pd.DataFrame):
+            # extract the closing column from the target data
+            target = target[column]
+        # check if the target is already a numpy array
+        elif isinstance(target, np.ndarray):
+            pass
+        # otherwise raise a value error
+        else:
+            raise ValueError("The target data is not a Pandas DataFrame or Numpy Array")
+
+
         target = target.to_numpy()
 
         # check that the shape of the price data and target data are the same
@@ -46,10 +58,10 @@ class SignalGenerator:
         # create an array using zeros like the price data. make the array of type int8
         signals = np.zeros_like(price_data, dtype=np.int8)
         
-        # iterate through price data using numba
-        @nb.jit(nopython=True)
-        def generate_signals(price_data, target): -> numpy.ndarray
-            pass
+    # iterate through price data using numba
+    @nb.jit(nopython=True)
+    def generate_signals(price_data_np, target_np): -> numpy.ndarray
+        pass
 
         
 

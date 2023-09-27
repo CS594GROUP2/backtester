@@ -25,8 +25,10 @@ class SignalGenerator:
         metadata: A Pandas DataFrame containing the metadata for the price data will append the target metadata and return
 
         Returns:
-        A list containing a Numpy array of trading signals
-        and a concatenation of the metadata from the price data and target data
+        A list containing:
+        a Numpy array of trading signals
+        a Numpy array of the price data used
+        a concatenation of the metadata from the price data and target data
 
         """
 

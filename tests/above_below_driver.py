@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import ta
 import matplotlib.pyplot as plt
-from core import signals
+import core
+from core import SignalGenerator
 from core import Data
 
 
@@ -30,12 +31,34 @@ above_below strategy
 
 '''
 
+#construct a signal generator from SignalGenerator in signals.py
+signal_generator = SignalGenerator()
+
+trading_signals = signal_generator.above_below( price_data[0], ma_20, price_data[1], 'Close')
+
 
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))
 ax.plot(price_data['Close'], label='Close')
 ax.plot(ma_20, label='20 period MA')
 #need to plot the entry and exit signals separately as we want to use different colors
+
+#create a new arrays to distinguish positive and negative signals
+pos_signals = np.zeros_like(trading_signals, dtype=np.int8)
+neg_signals = np.zeros_like(trading_signals, dtype=np.int8)
+
+# loop through and collect the positive and negative trading signals
+for i in range(0, trading_signals.size):
+    if trading_signals[i] == 1:
+        pos_signals[i] = 1
+    elif trading_signals[i] == -1:
+        neg_signals[i] = 1
+
+ #plot the positive trading signals as green up arrows at the point price_data[i]
+
+ #plot the negative trading signals as red down arrows at the point price_data[i]
+
+
 ax.legend(loc='best')
 ax.set_title('Price Data w/ 20 period MA and crossover strategy signals')
 ax.set_ylabel('Price')

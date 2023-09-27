@@ -13,7 +13,7 @@ class SignalGenerator:
 
     
         """
-        Generates trading signals
+        Generates trading signals and stores them in a newly generated numpy array
         a positive trading signal(+1) is generated when the price crosses above the target
         a negative trading signal(-1) is generated when the price crosses below the target
         it is assumed to start not already in a position
@@ -63,6 +63,9 @@ class SignalGenerator:
     # iterate through price data using numba
     @nb.jit(nopython=True)
     def generate_signals(price_data_np, target_np): -> numpy.ndarray
+        '''
+        implement the algorithm shown in #notes-resources
+        '''
         pass
 
         

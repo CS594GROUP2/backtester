@@ -54,9 +54,11 @@ for i in range(0, trading_signals.size):
     elif trading_signals[i] == -1:
         neg_signals[i] = 1
 
- #plot the positive trading signals as green up arrows at the point price_data[i]
+#plot the positive trading signals as green up arrows at the point price_data[i]
+ax.scatter(price_data.index, price_data['Close'][pos_signals == 1], marker='^', color='g', label='Buy')
 
- #plot the negative trading signals as red down arrows at the point price_data[i]
+#plot the negative trading signals as red down arrows at the point price_data[i]
+ax.scatter(price_data.index, price_data['Close'][neg_signals == 1], marker='v', color='r', label='Sell')
 
 
 ax.legend(loc='best')

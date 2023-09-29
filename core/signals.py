@@ -35,6 +35,16 @@ class SignalGenerator:
         # extract the closing column from the price data
         price_data = price_data[column]
 
+        # check if the target is an instance of pandas-ta
+        if isinstance(target, ta.core.indicators.Indicator):
+            # extract the target data from the pandas-ta indicator
+            target = target.df
+            #extract the metadata from the pandas-ta indicator and concatenate it with metadata
+            metadata = pd.concat([metadata, target.metadata], axis=1)
+        
+
+
+
         # convert the price data to a numpy array
         price_data = price_data.to_numpy()
 
@@ -59,6 +69,8 @@ class SignalGenerator:
 
         # create an array using zeros like the price data. make the array of type int8
         signals = np.zeros_like(price_data, dtype=np.int8)
+
+        return [generate_signals(price_data, target), price_data, metadata]
         
     # iterate through price data using numba
     @nb.jit(nopython=True)

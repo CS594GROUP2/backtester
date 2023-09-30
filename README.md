@@ -1,5 +1,25 @@
-# backtester
+# Backtester
 This project allows you to backtest your trading strategies with historical stock market data. 
+
+## Getting started
+
+Get a copy of the project locally
+> git clone https://github.com/CS594GROUP2/backtester
+
+Automate virtual environment creation and dependency installation by executing `setup.sh` inside the project folder:
+> ./setup.sh
+
+Note: bash shell scripting is not supported natively on windows but you can use wsl/wsl2 to run it.
+
+### Activate the virtual environment (CL)
+
+Now, switch to the newly created virtual environment by running:
+> source env/bin/activate
+
+To test for successful setup:
+> pip list
+
+You should see a number of dependencies installed including pandas and yfianance.
 
 ## Project Structure
 

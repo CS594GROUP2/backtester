@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import numba as nb
+import ta  
 
 class SignalGenerator:
 
@@ -8,8 +9,27 @@ class SignalGenerator:
     def __init__(self):
         pass
 
+        # iterate through price data using numba
+    @nb.jit(nopython=True)
+    def generate_signals(price_data_np, target_np, signals): 
+        in_position = False
+        # iterate through grabbing items from prifce_data_np and target_np
+        for i in range(1, price_data_np.size):
+            if price_data_np[i] > target_np[i] and not in_position:
+                signals[i] = 1
+                in_position = True
+            elif price_data_np[i] < target_np[i] and in_position:
+                signals[i] = -1
+                in_position = False
+            else:
+                pass
+        return signals
 
-    def above_below( price_data: pd.DataFrame, target: pd.DataFrame, metadata: pd.DataFrame, column='Close') -> list:
+
+    def above_below( hist_data: pd.DataFrame, target, metadata, column='Close') -> list:
+        # print out all the arguments to verify they are correct
+        print(hist_data)
+        print('\n')
 
     
         """
@@ -32,8 +52,16 @@ class SignalGenerator:
 
         """
 
+
+
+
+        '''
         # extract the closing column from the price data
-        price_data = price_data[column]
+        closing_prices = price_data['Close']
+
+        print(closing_prices)
+
+
 
         # check if the target is an instance of pandas-ta
         if isinstance(target, ta.core.indicators.Indicator):
@@ -47,6 +75,8 @@ class SignalGenerator:
 
         # convert the price data to a numpy array
         price_data = price_data.to_numpy()
+
+        print(price_data)
 
         # convert the target data to a numpy array
         # check if the target is a dataframe
@@ -70,18 +100,10 @@ class SignalGenerator:
         # create an array using zeros like the price data. make the array of type int8
         signals = np.zeros_like(price_data, dtype=np.int8)
 
-        return [generate_signals(price_data, target), price_data, metadata]
-        
-    # iterate through price data using numba
-    @nb.jit(nopython=True)
-    def generate_signals(price_data_np, target_np): -> numpy.ndarray
-        '''
-        implement the algorithm shown in #notes-resources
-        '''
-        pass
-
+        signal_generator = SignalGenerator()
+        return [signal_generator.generate_signals(price_data, target), price_data, metadata]
         
 
+'''
 
 
-    

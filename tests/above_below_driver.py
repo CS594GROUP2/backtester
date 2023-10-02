@@ -2,40 +2,47 @@ import pandas as pd
 import numpy as np
 import ta
 import matplotlib.pyplot as plt
+import sys
+sys.path.append('/Users/dreed22/Documents/Github/backtester/')
 import core
-from core import SignalGenerator
-from core import Data
+from core.data import Data
+from core.signals import SignalGenerator
 
 
 # create an instance of the Data class
 data_grabber = Data()
 
-#fetch some historical price data
 
+#fetch some historical price data
 start = pd.Timestamp('2020-01-01')
 end = pd.Timestamp('2021-01-01')
 interval = pd.Timedelta('1d')
 ticker = 'AAPL'
 
-price_data = data_grabber.get_price_data(start, end, interval, ticker)
+data = data_grabber.get_price_data(start, end, interval, ticker)
 
-# use pandas-ta to compute the 20 period moving average of the closing price
-ma_20 = ta.trend.sma_indicator(price_data['Close'], 20)
+price_data = data[0]
 
-'''
-
-here we are going to generate some signals using the above_below function
-then we are going to want to plot them on an overlay with the price_data
-as well as the moving average to create a demonstratration of the 
-above_below strategy
-
-'''
+metadata = data[1]
 
 #construct a signal generator from SignalGenerator in signals.py
 signal_generator = SignalGenerator()
 
-trading_signals = signal_generator.above_below( price_data[0], ma_20, price_data[1], 'Close')
 
+# use pandas-ta to compute the 20 period moving average of the closing price
+ma_20 = ta.trend.sma_indicator(price_data['Close'], 20)
+
+print(price_data)
+#print(price_data['Close'])
+
+if isinstance(price_data, pd.DataFrame):
+    print("\n price_data is a dataframe \n ")
+
+trading_signals = signal_generator.above_below(price_data, ma_20, metadata)
+
+
+
+'''
 
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))
@@ -70,3 +77,4 @@ plt.show()
 
 
 
+'''

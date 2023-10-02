@@ -64,8 +64,9 @@ class Data:
         interval: The period (frequency/interval) for the price data.
         ticker: The ticker symbol for the stock.
         Returns:
-        A Pandas DataFrame containing the price data, with columns:
-            Open, High, Low, Close, Volume, Symbol, Period, Start, End
+        A list of Pandas DataFrames containing the price data, with columns:
+            Open, High, Low, Close, Volume in the first DataFrame.
+            start, end, interval, and symbol in the second DataFrame.
         """
         try:
             # Get the price data from Yahoo Finance.
@@ -86,11 +87,15 @@ class Data:
         if df.isnull().values.any():
             raise ValueError("NaN's found in price data.")
 
-        # Add additional columns to the price data.
-        df['Symbol'] = ticker.info.get('symbol')
-        df["interval"] = interval
-        df["Start"] = start
-        df["End"] = end
+        # Make a new dataframe for the metadata.
+        metadata = pd.DataFrame(index=[0], columns=['Symbol', 'interval', 'Start', 'End'])
 
-        return df
+        # Store the metadata into the new dataframe.    
+        metadata['Symbol'] = ticker.info.get('symbol')
+        metadata["interval"] = interval
+        metadata["Start"] = start
+        metadata["End"] = end
+
+        # Return the price data and the metadata.
+        return df, metadata
 

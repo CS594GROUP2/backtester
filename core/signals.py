@@ -9,6 +9,8 @@ def generate_signals(price_data_np, target_np, signals):
     in_position = False
     # iterate through grabbing items from prifce_data_np and target_np
     for i in range(1, price_data_np.size):
+        if target_np[i] == 0:
+            pass
         if price_data_np[i] > target_np[i] and not in_position:
             signals[i] = 1
             in_position = True

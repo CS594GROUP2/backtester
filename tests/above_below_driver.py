@@ -42,7 +42,9 @@ ma_20 = ta.trend.sma_indicator(price_data['Close'], 20)
 
 trading_signals = signal_generator.above_below(price_data, ma_20, metadata)[0]
 
-trading_signals = np_to_df_with_index(trading_signals, price_data)
+print(trading_signals  )
+
+trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 
 
 # use matplotlib to plot the price data and the moving average overlayed on one chart
@@ -51,24 +53,17 @@ ax.plot(price_data['Close'], label='Close')
 ax.plot(ma_20, label='20 period MA')
 #need to plot the entry and exit signals separately as we want to use different colors
 
-'''
-#create a new arrays to distinguish positive and negative signals
-pos_signals = pd.DataFrame(index=price_data.index, columns=['POS'])
-neg_signals = pd.DataFrame(index=price_data.index, columns=['NEG'])
-
-
-
-# loop through and collect the positive and negative trading signals
-for i in range(0, trading_signals.size):
-    if trading_signals[i] == 1:
-        pos_signals.loc() = 1
-    elif trading_signals[i] == -1:
-        neg_signals[i] = 1
-
-print(pos_signals)
-'''
 
 # create a scatter plot with the trading signals
+# use the trading signals to plot the entry points
+ax.scatter(trading_signals_df[trading_signals_df['Signals'] == 1].index, 
+            price_data['Close'][trading_signals_df['Signals'] == 1], 
+            label='Buy', color='green', marker='^', linewidths=5)
+
+# use the trading signals to plot the exit points
+ax.scatter(trading_signals_df[trading_signals_df['Signals'] == -1].index, 
+            price_data['Close'][trading_signals_df['Signals'] == -1], 
+            label='Sell', color='red', marker='v', linewidths=5)
 
 
 ax.legend(loc='best')

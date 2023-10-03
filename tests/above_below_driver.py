@@ -57,12 +57,12 @@ ax.plot(ma_20, label='20 period MA')
 # create a scatter plot with the trading signals
 # use the trading signals to plot the entry points
 ax.scatter(trading_signals_df[trading_signals_df['Signals'] == 1].index, 
-            price_data['Close'][trading_signals_df['Signals'] == 1], 
+            ma_20[trading_signals_df['Signals'] == 1], 
             label='Buy', color='green', marker='^', linewidths=5)
 
 # use the trading signals to plot the exit points
 ax.scatter(trading_signals_df[trading_signals_df['Signals'] == -1].index, 
-            price_data['Close'][trading_signals_df['Signals'] == -1], 
+            ma_20[trading_signals_df['Signals'] == -1], 
             label='Sell', color='red', marker='v', linewidths=5)
 
 

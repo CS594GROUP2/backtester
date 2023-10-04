@@ -9,7 +9,7 @@ class SignalGenerator:
 
     def random_signals(self, size, entry_probability, exit_probability):
         output_array = np.zeros(shape=size, dtype=np.int8)
-        random_values = np.random.random(size).astype(dtype=np.float32)
+        random_values = np.random.random(size)
 
         random_loop(output_array, random_values, entry_probability, exit_probability)
 

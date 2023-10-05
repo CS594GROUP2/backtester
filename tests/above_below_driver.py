@@ -40,10 +40,13 @@ signal_generator = SignalGenerator()
 # use pandas-ta to compute the 20 period moving average of the closing price
 ma_20 = ta.trend.sma_indicator(price_data['Close'], 20)
 
+# generate some trading signals using the above_below method
 trading_signals = signal_generator.above_below(price_data, ma_20, metadata)[0]
 
-print(trading_signals  )
+# show the trading signals as ones and zeros
+print(trading_signals)
 
+# convert the trading signals numpy array to a pandas dataframe
 trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 
 
@@ -51,8 +54,6 @@ trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 fig, ax = plt.subplots(figsize=(16,9))
 ax.plot(price_data['Close'], label='Close')
 ax.plot(ma_20, label='20 period MA')
-#need to plot the entry and exit signals separately as we want to use different colors
-
 
 # create a scatter plot with the trading signals
 # use the trading signals to plot the entry points
@@ -65,11 +66,12 @@ ax.scatter(trading_signals_df[trading_signals_df['Signals'] == -1].index,
             ma_20[trading_signals_df['Signals'] == -1], 
             label='Sell', color='red', marker='v', linewidths=5)
 
-
+# plot metadata
 ax.legend(loc='best')
 ax.set_title('Price Data w/ 20 period MA and crossover strategy signals')
 ax.set_ylabel('Price')
 ax.set_xlabel('Date')
+
 plt.show()
 
 

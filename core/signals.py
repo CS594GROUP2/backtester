@@ -3,7 +3,7 @@ import pandas as pd
 import numba as nb
 import ta  
 
-    # iterate through price data using numba
+# iterate through price data using numba
 @nb.jit(nopython=True)
 def generate_signals(price_data_np, target_np, signals): 
     in_position = False
@@ -27,9 +27,6 @@ class SignalGenerator:
     def __init__(self):
         pass
 
-
-
-
     def above_below(self, hist_data: pd.DataFrame, target, metadata, column='Close') -> list:
 
     
@@ -52,13 +49,20 @@ class SignalGenerator:
         a concatenation of the metadata from the price data and target data
 
         """
-
-
-
-
-
-        # extract the closing column from the price data
-        closing_prices = hist_data['Close']
+        # check if the price data is a dataframe
+        if isinstance(hist_data, pd.DataFrame):
+             # extract the closing column from the price data
+            price_data = hist_data[column].to_numpy()
+        # check if the price data is a pandas series
+        elif isinstance(hist_data, pd.Series):
+            price_data = hist_data.to_numpy()
+        # check if the price data is already a numpy array
+        elif isinstance(hist_data, np.ndarray):
+            pass
+        # otherwise raise a value error
+        else:
+            raise ValueError("The price data is not a Pandas DataFrame or Numpy Array")
+        
         
         # check if the target is a pandas series and convert it to a numpy array dtype int8
         if isinstance(target, pd.Series):
@@ -71,12 +75,6 @@ class SignalGenerator:
         # otherwise raise a value error
         else:
             raise ValueError("The target data is not a Pandas Series or Numpy Array")
-        
-        
-
-
-
-
 
         # convert the target data to a numpy array
         # check if the target is a dataframe

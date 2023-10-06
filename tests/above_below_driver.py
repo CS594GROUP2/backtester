@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import ta
+import pandas_ta as pta
 import matplotlib.pyplot as plt
 import sys
 sys.path.append('/Users/dreed22/Documents/Github/backtester/')
@@ -36,9 +36,7 @@ metadata = data[1]
 #construct a signal generator from SignalGenerator in signals.py
 signal_generator = SignalGenerator()
 
-
-# use pandas-ta to compute the 20 period moving average of the closing price
-ma_20 = ta.trend.sma_indicator(price_data['Close'], 20)
+ma_20 = pta.sma(price_data['Close'], 20)
 
 # generate some trading signals using the above_below method
 trading_signals = signal_generator.above_below(price_data, ma_20, metadata)[0]

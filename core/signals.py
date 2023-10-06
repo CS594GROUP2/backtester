@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-import numba as nb
-import ta  
+import numba as nb 
 
 # iterate through price data using numba
 @nb.jit(nopython=True)
@@ -102,6 +101,7 @@ class SignalGenerator:
 
 
         signal_generator = SignalGenerator()
+        
         return [generate_signals(price_data, target, signals), price_data, metadata]
         
 

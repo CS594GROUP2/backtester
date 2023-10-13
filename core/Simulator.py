@@ -30,12 +30,15 @@ def calculate_ratio_winning_trades(win_loss_percents_np):
         float: The ratio of winning trades.
     """
     num_winning_trades = 0
+    num_losing_trades = 0
 
     for i in range(len(win_loss_percents_np)):
-        if win_loss_percents_np[i] > 0:
+        if win_loss_percents_np[i] > float(0):
             num_winning_trades += 1
+        elif win_loss_percents_np[i] < float(0):
+            num_losing_trades += 1
 
-    return num_winning_trades / len(win_loss_percents_np)
+    return num_winning_trades / num_losing_trades
 
 
 
@@ -44,7 +47,9 @@ class Simulator:
 
     def __init__(self) -> None:
         pass
+
     
+
 
     def simulate(trading_signals_np, price_data_np, metadata=None):
         """Simulates a trading strategy using the given trading signals and price data.

@@ -68,8 +68,9 @@ class Data:
             Open, High, Low, Close, Volume in the first DataFrame.
             start, end, interval, and symbol in the second DataFrame.
         """
+        
+        # Get the price data from Yahoo Finance.
         try:
-            # Get the price data from Yahoo Finance.
             interval = self.timedelta_converter.to_string(interval)
 
             self.validate_interval(interval)

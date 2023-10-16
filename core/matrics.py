@@ -63,14 +63,10 @@ def calculate_variance(expectancy, win_loss_percents):
 
     return np.float64(variance)
 
+
+
+
 def calculate_sharpe_ratio(expectancy, variance):
-    data_grabber = Data()
-    risk_free_rate = data_grabber.get_risk_free_rate()
-    return calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate)
-
-
-@nb.jit
-def calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate):
     """
     Calculate the Sharpe Ratio for a given investment or trading strategy.
 
@@ -84,6 +80,9 @@ def calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate):
     Returns:
     float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
     """
+
+    data_grabber = Data()
+    risk_free_rate = data_grabber.get_risk_free_rate()
 
     if not expectancy or not variance:
         return None

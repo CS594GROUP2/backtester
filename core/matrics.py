@@ -1,5 +1,6 @@
 import numpy as np
 import numba as nb
+from data import Data
 
 @nb.njit
 def calculate_expectancy(win_loss_percents):
@@ -62,8 +63,14 @@ def calculate_variance(expectancy, win_loss_percents):
 
     return np.float64(variance)
 
-@nb.jit
 def calculate_sharpe_ratio(expectancy, variance):
+    data_grabber = Data()
+    risk_free_rate = data_grabber.get_risk_free_rate()
+    return calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate)
+
+
+@nb.jit
+def calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate):
     """
     Calculate the Sharpe Ratio for a given investment or trading strategy.
 
@@ -81,6 +88,6 @@ def calculate_sharpe_ratio(expectancy, variance):
     if not expectancy or not variance:
         return None
 
-    sharpe_ratio = (expectancy - variance) / np.sqrt(variance)
+    sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
 
     return np.float64(sharpe_ratio)

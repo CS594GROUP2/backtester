@@ -9,7 +9,7 @@ def win_loss_loop(trading_signals, price_data, portfolio_values, win_loss_percen
 
     # iterate through trading signals
     for i in range(trading_signals.size):
-        # Forward Filling values:
+        # Forward filling portfolio_values:
         if i > 0:
             portfolio_values[i] = portfolio_values[i - 1]
 
@@ -30,17 +30,28 @@ class Simulator:
         pass
 
         def calculate_trades_win_loss(self, price_data, trading_signals, starting_cash):
-        # create two new numPy array symetric to the trading signals using zeros_like()
+        """
+            Calculates the win/loss percentages and dollar amounts for a given set of trading signals and price data.
 
-        # win_loss[] will hold trade gain/loss in dollar amounts
+            Args:
+                price_data: An array of price data to calculate the strategy on
+                trading_signals: A matching array of indicators to reflect a trading strategy
+                starting_cash: The starting value for the portfolio
+            Returns:
+                win_loss[]: Holds trade gain/loss in dollar amounts
+                win_loss_percents[]: Holds the portfolio percent change as a result of closing trades
+                portfolio_values[]: Holds the portfolio value and is only be updated on closing trades
+        """
+
+        if starting_cash < 0:
+            raise ValueError("starting_cash must be greater than 0")
+        if price_data.size != trading_signals.size:
+            raise ValueError("price_data and trading_signals must be the same size")
+
         win_loss = np.zeros_like(trading_signals)
-
-        # win_loss_percents[] will hold the portfolio percent change as a result of the most recent closing trade
         win_loss_percents = np.zeros_like(trading_signals)
-
-        # portfolio_values[] will hold the portfolio value and only be updated on closing trades
         portfolio_values = np.empty_like(trading_signals)
-
+        
         # start the portfolio_values at starting_cash
         portfolio_values[0] = starting_cash
 

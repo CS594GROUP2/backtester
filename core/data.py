@@ -39,6 +39,12 @@ class Data:
     def __init__(self) -> None:
         self.timedelta_converter = TimedeltaConverter()
         self.valid_intervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo']
+
+    def get_risk_free_rate(self) -> float:
+        treasury = yf.Ticker('^TNX')  # ^TNX represents the 10-year US Treasury yield
+        treaury_df = treasury.history(interval='1m', period='1d')
+        risk_free_rate = treaury_df['Close'].iloc[-1] / 100
+        return risk_free_rate
     
     def validate_interval(self, interval: pd.Timedelta) -> None:
         if interval not in self.valid_intervals:

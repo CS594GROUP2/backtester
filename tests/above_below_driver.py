@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 from core.data import Data
 from core.signals import SignalGenerator
+from core.Simulator import Simulator
 
 
 # makes a new dataframe and copies the elements from the numpy array into it matching them with the dateTimes from the price data df
@@ -41,15 +42,18 @@ signal_generator = SignalGenerator()
 ma_20 = pta.sma(price_data['Close'], 20)
 
 # generate some trading signals using the above_below method
-trading_signals = signal_generator.above_below(price_data, ma_20, metadata)[0]
+strategy_instance = signal_generator.above_below(price_data, ma_20, metadata)
 
-# show the trading signals as ones and zeros
-print(trading_signals)
+# extract the trading signals from the strategy_instance
+trading_signals = strategy_instance[0]
+
+# extract the price data from the strategy_instance
+price_data_np = strategy_instance[1]
 
 # convert the trading signals numpy array to a pandas dataframe
 trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 
-
+""" 
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))
 ax.plot(price_data['Close'], label='Close')
@@ -73,6 +77,21 @@ ax.set_ylabel('Price')
 ax.set_xlabel('Date')
 
 plt.show()
+ """
+
+# call the simulator to simulate the trading strategy
+simulator = Simulator()
+
+simulation = simulator.simulate(trading_signals, price_data_np, metadata)
+
+# extract the win_loss_df from the simulation
+win_loss_df = simulation[0]
+print(win_loss_df)
+
+# print the stats from the simulation
+print(simulation[3])
+
+
 
 
 

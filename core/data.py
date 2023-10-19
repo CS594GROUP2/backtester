@@ -39,6 +39,12 @@ class Data:
     def __init__(self) -> None:
         self.timedelta_converter = TimedeltaConverter()
         self.valid_intervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo']
+
+    def get_risk_free_rate(self) -> float:
+        treasury = yf.Ticker('^TNX')  # ^TNX represents the 10-year US Treasury yield
+        treaury_df = treasury.history(interval='1m', period='1d')
+        risk_free_rate = treaury_df['Close'].iloc[-1] / 100
+        return risk_free_rate
     
     def validate_interval(self, interval: pd.Timedelta) -> None:
         if interval not in self.valid_intervals:
@@ -64,11 +70,13 @@ class Data:
         interval: The period (frequency/interval) for the price data.
         ticker: The ticker symbol for the stock.
         Returns:
-        A Pandas DataFrame containing the price data, with columns:
-            Open, High, Low, Close, Volume, Symbol, Period, Start, End
+        A list of Pandas DataFrames containing the price data, with columns:
+            Open, High, Low, Close, Volume in the first DataFrame.
+            start, end, interval, and symbol in the second DataFrame.
         """
+        
+        # Get the price data from Yahoo Finance.
         try:
-            # Get the price data from Yahoo Finance.
             interval = self.timedelta_converter.to_string(interval)
 
             self.validate_interval(interval)
@@ -86,11 +94,15 @@ class Data:
         if df.isnull().values.any():
             raise ValueError("NaN's found in price data.")
 
-        # Add additional columns to the price data.
-        df['Symbol'] = ticker.info.get('symbol')
-        df["interval"] = interval
-        df["Start"] = start
-        df["End"] = end
+        # Make a new dataframe for the metadata.
+        metadata = pd.DataFrame(index=[0], columns=['Symbol', 'interval', 'Start', 'End'])
 
-        return df
+        # Store the metadata into the new dataframe.    
+        metadata['Symbol'] = ticker.info.get('symbol')
+        metadata["interval"] = interval
+        metadata["Start"] = start
+        metadata["End"] = end
+
+        # Return the price data and the metadata.
+        return df, metadata
 

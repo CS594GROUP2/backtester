@@ -53,7 +53,7 @@ price_data_np = strategy_instance[1]
 # convert the trading signals numpy array to a pandas dataframe
 trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 
-""" 
+
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))
 ax.plot(price_data['Close'], label='Close')
@@ -77,7 +77,7 @@ ax.set_ylabel('Price')
 ax.set_xlabel('Date')
 
 plt.show()
- """
+
 
 # call the simulator to simulate the trading strategy
 simulator = Simulator()

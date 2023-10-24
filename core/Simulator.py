@@ -5,6 +5,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from .data import Data
+import yfinance as yf
 
 
 
@@ -243,10 +244,34 @@ def calculate_variance(expectancy, win_loss_percents):
 
     return np.float64(variance)
 
+
 def calculate_sharpe_ratio(expectancy, variance):
-    data_grabber = Data()
-    risk_free_rate = data_grabber.get_risk_free_rate()
-    return calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate)
+    """
+    Calculate the Sharpe Ratio for a given investment or trading strategy.
+
+    The Sharpe Ratio assesses the risk-adjusted returns of an investment or trading strategy.
+    It is calculated as the difference between the expected return and the risk-free rate, divided by the standard deviation of returns.
+
+    Parameters:
+    expectancy (float): the mean or expectancy of the win-loss percentages.
+    variance (float): The variance of returns or portfolio values.
+
+    Returns:
+    float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
+    """
+
+    if not expectancy or not variance:
+        return None
+    
+    treasury = yf.Ticker('^TNX')  # ^TNX represents the 10-year US Treasury yield
+    treaury_df = treasury.history(interval='1m', period='1d')
+    risk_free_rate = treaury_df['Close'].iloc[-1] / 100
+
+    sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
+
+    return np.float64(sharpe_ratio)
+
+
 
 
 

@@ -249,31 +249,6 @@ def calculate_sharpe_ratio(expectancy, variance):
     return calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate)
 
 
-def calculate_sharpe_ratio_nb(expectancy, variance, risk_free_rate):
-    """
-    Calculate the Sharpe Ratio for a given investment or trading strategy.
-
-    The Sharpe Ratio assesses the risk-adjusted returns of an investment or trading strategy.
-    It is calculated as the difference between the expected return and the risk-free rate, divided by the standard deviation of returns.
-
-    Parameters:
-    expectancy (float): the mean or expectancy of the win-loss percentages.
-    variance (float): The variance of returns or portfolio values.
-
-    Returns:
-    float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
-    """
-
-    if not expectancy or not variance:
-        return None
-
-    sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
-
-    return np.float64(sharpe_ratio)
-
-
-
-
 
 
  

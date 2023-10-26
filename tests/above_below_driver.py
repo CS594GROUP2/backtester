@@ -54,10 +54,32 @@ price_data_np = strategy_instance[1]
 trading_signals_df = np_to_df_with_index(trading_signals, price_data)
 
 
+
+
+# call the simulator to simulate the trading strategy
+simulator = Simulator()
+
+simulation = simulator.simulate(trading_signals, price_data_np, metadata)
+
+# extract the win_loss_df from the simulation
+win_loss_df = simulation[0]
+print(win_loss_df)
+
+# print the stats from the simulation
+print(simulation[3])
+
+
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))
 ax.plot(price_data['Close'], label='Close')
 ax.plot(ma_20, label='20 period MA')
+
+print(price_data.index)
+
+normalized_portfolio_values = win_loss_df['portfolio_values'] / win_loss_df['portfolio_values'][0] * price_data_np[0]
+
+
+ax.plot(price_data.index, normalized_portfolio_values, label='Portfolio Values', color='green')
 
 # create a scatter plot with the trading signals
 # use the trading signals to plot the entry points
@@ -77,19 +99,6 @@ ax.set_ylabel('Price')
 ax.set_xlabel('Date')
 
 plt.show()
-
-
-# call the simulator to simulate the trading strategy
-simulator = Simulator()
-
-simulation = simulator.simulate(trading_signals, price_data_np, metadata)
-
-# extract the win_loss_df from the simulation
-win_loss_df = simulation[0]
-print(win_loss_df)
-
-# print the stats from the simulation
-print(simulation[3])
 
 
 

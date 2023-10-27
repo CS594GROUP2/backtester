@@ -78,7 +78,6 @@ print(price_data.index)
 
 normalized_portfolio_values = win_loss_df['portfolio_values'] / win_loss_df['portfolio_values'][0] * price_data_np[0]
 
-
 ax.plot(price_data.index, normalized_portfolio_values, label='Portfolio Values', color='green')
 
 # create a scatter plot with the trading signals

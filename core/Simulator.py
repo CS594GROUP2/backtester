@@ -78,9 +78,14 @@ def calculate_ratio_winning_trades(win_loss_percents_np):
 class Simulator:
 
     def __init__(self) -> None:
-        pass
+        self.win_loss
+        self.win_loss_percents
+        self.portfolio_values
+        self.stats
+        self.metadata
+        self.trading_signals
 
-    def simulate(self, trading_signals_np, price_data_np, metadata=None):
+    def simulate(self, trading_strategy, metadata=None):
         """Simulates a trading strategy using the given trading signals and price data.
         
         Args:
@@ -106,6 +111,15 @@ class Simulator:
                     variance
                     
                 """
+        price_data_np = trading_strategy.price_data
+        trading_signals_np = trading_strategy.trading_signals
+
+        if not metadata:
+            metadata = trading_strategy.metadata
+        else:
+            metadata = metadata
+            metadata.append(trading_strategy.metadata)
+
         input_df = pd.DataFrame({
             'trading_signals': trading_signals_np,
             'price_data': price_data_np
@@ -142,10 +156,17 @@ class Simulator:
             'variance': variance
         }
 
+        self.stats = stats
+        self.metadata = metadata
+        self.portfolio_values = portfolio_values_np
+        self.win_loss_percents = win_loss_percents_np
+        self.win_loss = win_loss_np
+        self.trading_signals = trading_signals_np
+
         # package the output into a list
         dataframes = [win_loss_df, input_df, metadata, stats]
 
-        return dataframes
+        return None
 
     def calculate_trades_win_loss(self, price_data, trading_signals, starting_cash=10000):
         """

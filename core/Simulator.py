@@ -145,8 +145,6 @@ class Simulator:
 
         ratio_winning_trades = calculate_ratio_winning_trades(win_loss_percents_np)
 
-        metadata = metadata # the metadata should be passed in as a dataframe already
-
         # packcage the stats into a dictionary
         stats = {
             'max_drawdown': max_drawdown,
@@ -162,9 +160,6 @@ class Simulator:
         self.win_loss_percents = win_loss_percents_np
         self.win_loss = win_loss_np
         self.trading_signals = trading_signals_np
-
-        # package the output into a list
-        dataframes = [win_loss_df, input_df, metadata, stats]
 
         return None
 

@@ -40,7 +40,7 @@ class SignalGenerator:
 
     # constructor method no data members
     def __init__(self):
-        pass
+        self.metadata = dict()
 
     def random_signals(self, size, entry_probability, exit_probability):
         """
@@ -61,6 +61,8 @@ class SignalGenerator:
             raise ValueError("entry_probability must be between 0 and 1")
         if exit_probability < 0 or exit_probability > 1:
             raise ValueError("exit_probability must be between 0 and 1")
+        
+        self.metadata['random_signals'] = True
 
         # Create output array with all zeros and specified size:
         output_array = np.zeros(shape=size, dtype=np.int8)
@@ -86,7 +88,13 @@ class SignalGenerator:
         Args:
         price_data: A Pandas DataFrame containing the price data in OHLCV format note the close will be taken
         target: A Pandas DataFrame containing the target data crossover values
-        metadata: A Pandas DataFrame containing the metadata for the price data will append the target metadata and return
+        metadata: A Pyhon dictionary containing the metadata for the price data and technical indicator
+            - ticker: The ticker symbol of the price data
+            - start_date: The start date of the price data
+            - end_date: The end date of the price data
+            - interval: The interval of the price data
+            - indicator: The name of the technical indicator
+            - parameters: The parameters of the technical indicator (nested dictionary)
 
         Returns:
         A list containing:
@@ -95,6 +103,9 @@ class SignalGenerator:
         a concatenation of the metadata from the price data and target data
 
         """
+
+        self.metadata = metadata
+
         # check if the price data is a dataframe
         if isinstance(hist_data, pd.DataFrame):
             # extract the closing column from the price data

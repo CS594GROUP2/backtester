@@ -1,5 +1,6 @@
 import numpy as np
 import datetime as dt
+import pandas as pd
 
 
 def mock_win_loss_percents(array_length=100):
@@ -42,5 +43,9 @@ def mock_timestamps(array_length=100):
 
     for i in range(array_length):
         mock[i] = time_now + time_delta * i
+
+    # turn mock into a pd.Series
+    mock = pd.Series(mock)
+
     return mock
 

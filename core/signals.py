@@ -23,10 +23,11 @@ def generate_random(size, entp, extp):
     
     return output_array
 
-# iterate through price data using numba
 @nb.jit(nopython=True)
-def generate_signals(price_data_np, target_np, signals): 
+def generate_signals(price_data_np, target_np):
+    signals = np.zeros_like(price_data_np, dtype=np.int8)
     in_position = False
+
     # iterate through grabbing items from prifce_data_np and target_np
     for i in range(1, price_data_np.size):
         if target_np[i] == 0:
@@ -39,20 +40,18 @@ def generate_signals(price_data_np, target_np, signals):
             in_position = False
         else:
             pass
+    
     return signals
 
 class SignalGenerator:
 
     # constructor method no data members
     def __init__(self, price_data=None, metadata=None):
-        self.price_data : np.ndarray = price_data
-        self.trading_signals : np.ndarray = metadata
-        self.metadata : list = None
+        self.price_data : pd.DataFrame = price_data
+        self.metadata : list = metadata
+        self.trading_signals : np.ndarray = None
 
-    def get_trading_signals(self):
-        return self.trading_signals
-
-    def random_signals(self, size, entry_probability, exit_probability):
+    def generate_random(self, size, entry_probability, exit_probability) -> np.ndarray:
         """
             Returns random trading strategy for a given size, entry and exit probability.
 
@@ -75,11 +74,9 @@ class SignalGenerator:
         random_signals = generate_random(size, entry_probability, exit_probability)
         self.trading_signals = random_signals
 
-        return self.get_trading_signals()
+        return self.trading_signals
 
-
-    def above_below(self, hist_data: pd.DataFrame, target, metadata, column='Close') -> list:
-    
+    def generate_above_below(self, target, column='Close') -> np.ndarray:
         """
         Generates trading signals and stores them in a newly generated numpy array
         a positive trading signal(+1) is generated when the price crosses above the target
@@ -88,72 +85,48 @@ class SignalGenerator:
         
 
         Args:
-        price_data: A Pandas DataFrame containing the price data in OHLCV format note the close will be taken
-        target: A Pandas DataFrame containing the target data crossover values
-        metadata: A Pandas DataFrame containing the metadata for the price data will append the target metadata and return
-
+        target: a Pandas Series or Numpy Array containing the target data crossover values
+        metadata: a List containing the metadata for the price data, included in get_results()
+        
         Returns:
-        A list containing:
-        a Numpy array of trading signals
-        a Numpy array of the price data used
-        a concatenation of the metadata from the price data and target data
-
+        a NumPy array of trading signals
         """
-        # check if the price data is a dataframe
-        if isinstance(hist_data, pd.DataFrame):
-            # extract the closing column from the price data
-            price_data = hist_data[column].to_numpy()
-        # check if the price data is a pandas series
-        elif isinstance(hist_data, pd.Series):
-            price_data = hist_data.to_numpy()
-        # check if the price data is already a numpy array
-        elif isinstance(hist_data, np.ndarray):
-            pass
-        # otherwise raise a value error
-        else:
-            raise ValueError("The price data is not a Pandas DataFrame or Numpy Array")
+
+        # validate the column name is in the price data
+        if column not in self.price_data.columns:
+            raise ValueError("The column does not exist in the price data")
         
-        
-        # check if the target is a pandas series and convert it to a numpy array dtype int8
+        # validate the target data (must be a Pandas Series or Numpy Array)
         if isinstance(target, pd.Series):
-            #convert all the NaN values to 0
+            # convert all the NaN values to 0
             target = target.fillna(0)
             target = target.to_numpy(dtype=np.int8)
-        # check if the target is already a numpy array
         elif isinstance(target, np.ndarray):
             pass
-        # otherwise raise a value error
         else:
             raise ValueError("The target data is not a Pandas Series or Numpy Array")
 
-        # convert the target data to a numpy array
-        # check if the target is a dataframe
-        if isinstance(hist_data, pd.DataFrame):
-            # extract the closing column from the target data
-            price_data = hist_data[column]
-        # check if the target is already a numpy array
-        elif isinstance(target, np.ndarray):
-            pass
-        # otherwise raise a value error
-        else:
-            raise ValueError("The target data is not a Pandas DataFrame or Numpy Array")
+        if not isinstance(target, np.ndarray):
+            raise ValueError("The target data is not a Numpy Array")
         
-        # convert the price data to a numpy array
-        price_data = price_data.to_numpy()
+        # extract the closing column from the price data
+        price_data_close = self.price_data[column].to_numpy()
 
-        # check that the shape of the price data and target data are the same
-        if price_data.shape != target.shape:
+        # check shape of price data and target data
+        if price_data_close.shape != target.shape:
             raise ValueError("The price data and target data are not the same shape")
-
-        # create an array using zeros like the price data. make the array of type int8
-        signals = np.zeros_like(price_data, dtype=np.int8)
-
-        # call the generate_signals function to generate the trading signals
-        self.trading_signals = generate_signals(price_data, target, signals)
+        
+        above_below_signals = generate_signals(price_data_close, target)
+        self.trading_signals = above_below_signals
 
         return self.trading_signals
-    
+
     def get_results(self):
+        """
+        Returns:
+        A list containing:
+        a Numpy array of trading signals
+        a Numpy array of the price data
+        a List of metadata
+        """
         return [self.trading_signals, self.price_data, self.metadata]
-
-

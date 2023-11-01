@@ -2,21 +2,26 @@ import numpy as np
 import pandas as pd
 import numba as nb 
 
-# iterate through random array using numba
+
+# helper function to loop through random values and fill output array
 @nb.jit(nopython=True)
-def random_loop(zero_array, rand_values, entp, extp):
+def generate_random(size, entp, extp):
+    output_array = np.zeros(shape=size, dtype=np.int8)
+    random_values = np.random.random(size)
     in_position = False
 
     # iterate through array, going in and out of position based on the random values
-    for i in range(zero_array.size):
+    for i in range(output_array.size):
         if in_position:
-            if extp > rand_values[i]:
-                zero_array[i] = -1
+            if extp > random_values[i]:
+                output_array[i] = -1
                 in_position = False
         else:
-            if entp > rand_values[i]:
-                zero_array[i] = 1
+            if entp > random_values[i]:
+                output_array[i] = 1
                 in_position = True
+    
+    return output_array
 
 # iterate through price data using numba
 @nb.jit(nopython=True)
@@ -39,9 +44,9 @@ def generate_signals(price_data_np, target_np, signals):
 class SignalGenerator:
 
     # constructor method no data members
-    def __init__(self):
-        self.trading_signals : np.ndarray = None
-        self.price_data : np.ndarray = None
+    def __init__(self, price_data=None, metadata=None):
+        self.price_data : np.ndarray = price_data
+        self.trading_signals : np.ndarray = metadata
         self.metadata : list = None
 
     def get_trading_signals(self):
@@ -67,16 +72,8 @@ class SignalGenerator:
         if exit_probability < 0 or exit_probability > 1:
             raise ValueError("exit_probability must be between 0 and 1")
 
-        # Create output array with all zeros and specified size:
-        output_array = np.zeros(shape=size, dtype=np.int8)
-
-        # Create array of random values with same size:
-        random_values = np.random.random(size)
-
-        # Call helper function to efficiently loop through random array and fill the output array with signals
-        random_loop(output_array, random_values, entry_probability, exit_probability)
-
-        self.trading_signals = output_array
+        random_signals = generate_random(size, entry_probability, exit_probability)
+        self.trading_signals = random_signals
 
         return self.get_trading_signals()
 
@@ -144,7 +141,6 @@ class SignalGenerator:
         # convert the price data to a numpy array
         price_data = price_data.to_numpy()
 
-
         # check that the shape of the price data and target data are the same
         if price_data.shape != target.shape:
             raise ValueError("The price data and target data are not the same shape")
@@ -152,9 +148,10 @@ class SignalGenerator:
         # create an array using zeros like the price data. make the array of type int8
         signals = np.zeros_like(price_data, dtype=np.int8)
 
-        self.trading_signals = signals
+        # call the generate_signals function to generate the trading signals
+        self.trading_signals = generate_signals(price_data, target, signals)
 
-        return self.trading_signals        
+        return self.trading_signals
     
     def get_results(self):
         return [self.trading_signals, self.price_data, self.metadata]

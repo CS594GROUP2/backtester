@@ -40,7 +40,12 @@ class SignalGenerator:
 
     # constructor method no data members
     def __init__(self):
-        pass
+        self.trading_signals : np.ndarray = None
+        self.price_data : np.ndarray = None
+        self.metadata : list = None
+
+    def get_trading_signals(self):
+        return self.trading_signals
 
     def random_signals(self, size, entry_probability, exit_probability):
         """
@@ -71,7 +76,9 @@ class SignalGenerator:
         # Call helper function to efficiently loop through random array and fill the output array with signals
         random_loop(output_array, random_values, entry_probability, exit_probability)
 
-        return output_array
+        self.trading_signals = output_array
+
+        return self.get_trading_signals()
 
 
     def above_below(self, hist_data: pd.DataFrame, target, metadata, column='Close') -> list:
@@ -145,9 +152,11 @@ class SignalGenerator:
         # create an array using zeros like the price data. make the array of type int8
         signals = np.zeros_like(price_data, dtype=np.int8)
 
-        signal_generator = SignalGenerator()
-        
-        return [generate_signals(price_data, target, signals), price_data, metadata]
-        
+        self.trading_signals = signals
+
+        return self.trading_signals        
+    
+    def get_results(self):
+        return [self.trading_signals, self.price_data, self.metadata]
 
 

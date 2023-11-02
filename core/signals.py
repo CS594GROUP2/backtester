@@ -6,22 +6,22 @@ import numba as nb
 # helper function to loop through random values and fill output array
 @nb.jit(nopython=True)
 def generate_random(size, entp, extp):
-    output_array = np.zeros(shape=size, dtype=np.int8)
+    random_signals = np.zeros(shape=size, dtype=np.int8)
     random_values = np.random.random(size)
     in_position = False
 
     # iterate through array, going in and out of position based on the random values
-    for i in range(output_array.size):
+    for i in range(random_signals.size):
         if in_position:
             if extp > random_values[i]:
-                output_array[i] = -1
+                random_signals[i] = -1
                 in_position = False
         else:
             if entp > random_values[i]:
-                output_array[i] = 1
+                random_signals[i] = 1
                 in_position = True
     
-    return output_array
+    return random_signals
 
 @nb.jit(nopython=True)
 def generate_signals(price_data_np, target_np):

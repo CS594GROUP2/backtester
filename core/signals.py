@@ -95,11 +95,6 @@ class SignalGenerator:
         a NumPy array of trading signals
         """
 
-        # print the arguments and types
-        print("target: ", type(target))
-        print("hist_data: ", type(hist_data))
-        print("metadata: ", type(metadata))
-
         self.metatdata = metadata
 
         # check if the price data is a dataframe

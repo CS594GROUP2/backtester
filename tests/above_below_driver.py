@@ -43,9 +43,6 @@ signal_generator = SignalGenerator()
 
 ma_20 = pta.sma(price_data['Close'], 20)
 
-#print out the type of the ma_20 variable
-print(type(ma_20))
-
 # generate some trading signals using the above_below method
 strategy_instance = signal_generator.generate_above_below(ma_20, price_data['Close'], metadata)
 
@@ -55,7 +52,7 @@ trading_signals = strategy_instance[0]
 # extract the price data from the strategy_instance
 price_data_np = strategy_instance[1]
 
-
+simulation_metadata = {}
 """ 
 # make a trading signals df with the trading signals and the index from the price data
 trading_signals_df = pd.DataFrame(trading_signals)
@@ -68,14 +65,12 @@ trading_signals_df.index = price_data.index
 # call the simulator to simulate the trading strategy
 simulator = Simulator()
 
-simulation = simulator.simulate(trading_signals, price_data_np, metadata)
+simulation = simulator.simulate(signal_generator, simulation_metadata)
 
-# extract the win_loss_df from the simulation
-win_loss_df = simulation[0]
-print(win_loss_df)
+print(simulator.win_loss_percents)
 
 # print the stats from the simulation
-print(simulation[3])
+print(simulator.stats)
 
 """ 
 # use matplotlib to plot the price data and the moving average overlayed on one chart

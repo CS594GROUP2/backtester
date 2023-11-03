@@ -78,12 +78,12 @@ def calculate_ratio_winning_trades(win_loss_percents_np):
 class Simulator:
 
     def __init__(self) -> None:
-        self.win_loss
-        self.win_loss_percents
-        self.portfolio_values
-        self.stats
-        self.metadata
-        self.trading_signals
+        self.win_loss = None
+        self.win_loss_percents = None
+        self.portfolio_values = None
+        self.stats = {}
+        self.metadata = {}
+        self.trading_signals = None
 
     def simulate(self, trading_strategy, metadata=None):
         """Simulates a trading strategy using the given trading signals and price data.
@@ -115,10 +115,10 @@ class Simulator:
         trading_signals_np = trading_strategy.trading_signals
 
         if not metadata:
-            metadata = trading_strategy.metadata
+            self.metadata = trading_strategy.metadata
         else:
-            metadata = metadata
-            metadata.append(trading_strategy.metadata)
+            self.metadata = trading_strategy.metadata
+            self.metadata.update(metadata)
 
         input_df = pd.DataFrame({
             'trading_signals': trading_signals_np,
@@ -129,21 +129,25 @@ class Simulator:
 
         win_loss_np, win_loss_percents_np, portfolio_values_np = simulator_instance.calculate_trades_win_loss( price_data_np, trading_signals_np)
 
+        self.win_loss = win_loss_np
+        self.win_loss_percents = win_loss_percents_np
+        self.portfolio_values = portfolio_values_np
+
         win_loss_df = pd.DataFrame({
             'win_loss': win_loss_np,
             'win_loss_percents': win_loss_percents_np,
             'portfolio_values': portfolio_values_np
         })
 
-        expectancy = calculate_expectancy(win_loss_percents_np)
+        expectancy = calculate_expectancy(self.win_loss_percents)
 
-        variance = calculate_variance(expectancy, win_loss_percents_np)
+        variance = calculate_variance(expectancy, self.win_loss_percents)
 
         sharpe_ratio = calculate_sharpe_ratio(expectancy, variance)
 
-        max_drawdown = calculate_max_drawdown(win_loss_percents_np)
+        max_drawdown = calculate_max_drawdown(self.win_loss_percents)
 
-        ratio_winning_trades = calculate_ratio_winning_trades(win_loss_percents_np)
+        ratio_winning_trades = calculate_ratio_winning_trades(self.win_loss_percents)
 
         # packcage the stats into a dictionary
         stats = {
@@ -217,14 +221,14 @@ def calculate_expectancy(win_loss_percents):
     """
 
     if len(win_loss_percents) == 0:
-        return None
+        return 0
 
     non_zero_percentages = win_loss_percents[win_loss_percents != 0]
     total_returns = np.sum(non_zero_percentages)
     number_of_trades = len(non_zero_percentages)
 
     if number_of_trades == 0:
-        return None
+        return 0
 
     expectancy = total_returns / number_of_trades
 

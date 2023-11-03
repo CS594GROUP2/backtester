@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from core.data import Data
 from core.signals import SignalGenerator
-from core.Simulator import Simulator
+from core.simulator import Simulator
 
 
 # makes a new dataframe and copies the elements from the numpy array into it matching them with the dateTimes from the price data df

@@ -106,10 +106,10 @@ class Simulator:
                     variance
                     
                 """
-        input_df = pd.DataFrame({
+        inputs = {
             'trading_signals': trading_signals_np,
             'price_data': price_data_np
-        })
+        }
 
         simulator_instance = Simulator()
 
@@ -143,7 +143,7 @@ class Simulator:
         }
 
         # package the output into a list
-        dataframes = [win_loss_df, input_df, metadata, stats]
+        dataframes = [win_loss_df, inputs, metadata, stats]
 
         return dataframes
 

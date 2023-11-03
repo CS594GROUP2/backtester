@@ -45,7 +45,7 @@ def generate_signals(price_data_np, target_np):
 
 class SignalGenerator:
 
-    def __init__(self, price_data=None, metadata={}):
+    def __init__(self, price_data, metadata={}):
         self.price_data : pd.Series = price_data
         self.metadata : dict = metadata
         self.trading_signals : np.ndarray = None

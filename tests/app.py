@@ -39,10 +39,42 @@ simulator = Simulator(strategy_instance)
 simulation_output = simulator.get_results()
 
 print(simulation_output.keys())
-print(simulation_output['stats'])
+# print(simulation_output['stats'])
+print(simulation_output['input'])
 
 
 # GRAPHING
+# localize variables for graphing
+# price_data
 
 
+# # use matplotlib to plot the price data and the moving average overlayed on one chart
+# fig, ax = plt.subplots(figsize=(16,9))
+# ax.plot(price_data['Close'], label='Close')
+# ax.plot(ma_20, label='20 period MA')
 
+# print(price_data.index)
+
+# normalized_portfolio_values = win_loss_df['portfolio_values'] / win_loss_df['portfolio_values'][0] * price_data_np[0]
+
+
+# ax.plot(price_data.index, normalized_portfolio_values, label='Portfolio Values', color='green')
+
+# # create a scatter plot with the trading signals
+# # use the trading signals to plot the entry points
+# ax.scatter(trading_signals_df[trading_signals_df['Signals'] == 1].index, 
+#             ma_20[trading_signals_df['Signals'] == 1], 
+#             label='Buy', color='green', marker='^', linewidths=5)
+
+# # use the trading signals to plot the exit points
+# ax.scatter(trading_signals_df[trading_signals_df['Signals'] == -1].index, 
+#             ma_20[trading_signals_df['Signals'] == -1], 
+#             label='Sell', color='red', marker='v', linewidths=5)
+
+# # plot metadata
+# ax.legend(loc='best')
+# ax.set_title('Price Data w/ 20 period MA and crossover strategy signals')
+# ax.set_ylabel('Price')
+# ax.set_xlabel('Date')
+
+# plt.show()

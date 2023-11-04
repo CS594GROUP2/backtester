@@ -1,18 +1,7 @@
-# import yfinance as yf
-# from .data import Data
-# import numpy as np
-# import pandas as pd
-# import numba as nb
-# import os
-# import sys
-# sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import numpy as np
 import pandas as pd
 import numba as nb 
 
-
-# loops through price_data and trading_signals, performing calculations and updating other 3 arrays
 @nb.jit(nopython=True)
 def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
     win_loss = np.zeros_like(price_data)
@@ -45,51 +34,8 @@ def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
 
     return output
 
-
-@nb.jit(nopython=True)
-def calculate_max_drawdown(win_loss_percents_np):
-    """Calculates the maximum drawdown for a given list of win/loss percentages.
-
-    Args:
-        win_loss_percents_np (np.array): A numpy array of win/loss percentages.
-
-    Returns:
-        float: The maximum drawdown.
-    """
-    max_drawdown = 0
-
-    for i in range(len(win_loss_percents_np)):
-        max_drawdown = min(max_drawdown, win_loss_percents_np[i])
-
-    return max_drawdown
-
-
-@nb.jit(nopython=True)
-def calculate_ratio_winning_trades(win_loss_percents_np):
-    """Calculates the ratio of winning trades for a given list of win/loss percentages.
-
-    Args:
-        win_loss_percents_np (np.array): A numpy array of win/loss percentages.
-
-    Returns:
-        float: The ratio of winning trades.
-    """
-    num_winning_trades = 0
-    num_losing_trades = 0
-
-    for i in range(len(win_loss_percents_np)):
-        if win_loss_percents_np[i] > float(0):
-            num_winning_trades += 1
-        elif win_loss_percents_np[i] < float(0):
-            num_losing_trades += 1
-
-    if num_losing_trades == 0:
-        return 1
-    return num_winning_trades / num_losing_trades
-
-
 @nb.njit
-def calculate_expectancy(win_loss_percents):
+def calculate_expectancy(win_loss_percents) -> float:
     """
     Calculate the expectancy of a list of win-loss percentages.
 
@@ -119,9 +65,8 @@ def calculate_expectancy(win_loss_percents):
 
     return np.float64(expectancy)
 
-
 @nb.njit
-def calculate_variance(expectancy, win_loss_percents):
+def calculate_variance(expectancy, win_loss_percents) -> float:
     """
     Calculate the variance of a list of win-loss percentages.
 
@@ -150,8 +95,35 @@ def calculate_variance(expectancy, win_loss_percents):
 
     return np.float64(variance)
 
+# @nb.njit
+# def calculate_sharpe_ratio(expectancy, variance) -> float:
+#     """
+#     Calculate the Sharpe Ratio for a given investment or trading strategy.
 
-def calculate_sharpe_ratio(expectancy, variance):
+#     The Sharpe Ratio assesses the risk-adjusted returns of an investment or trading strategy.
+#     It is calculated as the difference between the expected return and the risk-free rate, divided by the standard deviation of returns.
+
+#     Parameters:
+#     expectancy (float): the mean or expectancy of the win-loss percentages.
+#     variance (float): The variance of returns or portfolio values.
+
+#     Returns:
+#     float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
+#     """
+
+#     if not expectancy or not variance:
+#         return None
+
+#     # ^TNX represents the 10-year US Treasury yield
+#     treasury = yf.Ticker('^TNX')
+#     treaury_df = treasury.history(interval='1m', period='1d')
+#     risk_free_rate = treaury_df['Close'].iloc[-1] / 100
+
+#     sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
+
+#     return np.float64(sharpe_ratio)
+@nb.jit(nopython=True)
+def calculate_sharpe_ratio(expectancy, variance, risk_free_rate):
     """
     Calculate the Sharpe Ratio for a given investment or trading strategy.
 
@@ -161,6 +133,7 @@ def calculate_sharpe_ratio(expectancy, variance):
     Parameters:
     expectancy (float): the mean or expectancy of the win-loss percentages.
     variance (float): The variance of returns or portfolio values.
+    risk_free_rate (float): The risk-free rate of return, typically representing a Treasury yield.
 
     Returns:
     float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
@@ -169,14 +142,49 @@ def calculate_sharpe_ratio(expectancy, variance):
     if not expectancy or not variance:
         return None
 
-    # ^TNX represents the 10-year US Treasury yield
-    treasury = yf.Ticker('^TNX')
-    treaury_df = treasury.history(interval='1m', period='1d')
-    risk_free_rate = treaury_df['Close'].iloc[-1] / 100
-
     sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
 
     return np.float64(sharpe_ratio)
+
+@nb.jit(nopython=True)
+def calculate_max_drawdown(win_loss_percents_np) -> float:
+    """Calculates the maximum drawdown for a given list of win/loss percentages.
+
+    Args:
+        win_loss_percents_np (np.array): A numpy array of win/loss percentages.
+
+    Returns:
+        float: The maximum drawdown.
+    """
+    max_drawdown = 0
+
+    for i in range(len(win_loss_percents_np)):
+        max_drawdown = min(max_drawdown, win_loss_percents_np[i])
+
+    return max_drawdown
+
+@nb.jit(nopython=True)
+def calculate_ratio_winning_trades(win_loss_percents_np) -> float:
+    """Calculates the ratio of winning trades for a given list of win/loss percentages.
+
+    Args:
+        win_loss_percents_np (np.array): A numpy array of win/loss percentages.
+
+    Returns:
+        float: The ratio of winning trades.
+    """
+    num_winning_trades = 0
+    num_losing_trades = 0
+
+    for i in range(len(win_loss_percents_np)):
+        if win_loss_percents_np[i] > float(0):
+            num_winning_trades += 1
+        elif win_loss_percents_np[i] < float(0):
+            num_losing_trades += 1
+
+    if num_losing_trades == 0:
+        return 1
+    return num_winning_trades / num_losing_trades
 
 
 class Simulator:
@@ -185,6 +193,7 @@ class Simulator:
         self.strategy_instance = strategy_instance
         self.metadata = strategy_instance.metadata if metadata is None else metadata
         self.starting_cash = 10000
+        self.win_loss_stats = None
 
     def simulate(self):
         """
@@ -211,16 +220,31 @@ class Simulator:
                     variance
         """
 
-        price_data = self.strategy_instance.price_data
-        trading_signals = self.strategy_instance.trading_signals
+        # generate win loss stats if not already generated
+        # TODO: check if win_loss_stats is None
+        self.calculate_trades_win_loss()
 
-        # numba needs numpy arrays
-        # TODO: validate that price_data and trading_signals are numpy arrays
-        price_data_np = price_data.to_numpy()
-        trading_signals_np = trading_signals
+        # localize variables
+        win_loss = self.win_loss_stats["win_loss"]
+        win_loss_percents = self.win_loss_stats["win_loss_percents"]
+        portfolio_values = self.win_loss_stats["portfolio_values"]
 
-        result = self.calculate_trades_win_loss(price_data_np, trading_signals_np)
-        return result
+        # generate stats
+        expectancy = calculate_expectancy(win_loss_percents)
+        variance = calculate_variance(expectancy, win_loss_percents)
+        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance, 0.035) # risk_free_rate = 0.015  # 1.5% annual risk-free rate
+        max_drawdown = calculate_max_drawdown(win_loss_percents)
+        ratio_winning_trades = calculate_ratio_winning_trades(win_loss_percents)
+
+        stats = {
+            "max_drawdown": max_drawdown,
+            "ratio_winning_trades": ratio_winning_trades,
+            "sharpe_ratio": sharpe_ratio,
+            "expectancy": expectancy,
+            "variance": variance
+        }
+
+        return stats
     
     def calculate_trades_win_loss(self) -> dict:
         """
@@ -238,8 +262,9 @@ class Simulator:
         """
 
         # localize variables
+        # TODO: validate that price_data and trading_signals are numpy arrays
         starting_cash = self.starting_cash
-        price_data = self.strategy_instance.price_data
+        price_data = self.strategy_instance.price_data.to_numpy()
         trading_signals = self.strategy_instance.trading_signals
 
         if starting_cash < 0:
@@ -249,5 +274,6 @@ class Simulator:
 
         # return dict of arrays -> win_loss, win_loss_percents, portfolio_values
         output = win_loss_loop(trading_signals, price_data, starting_cash)
+        self.win_loss_stats = output
 
-        return output
+        return self.win_loss_stats

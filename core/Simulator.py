@@ -182,8 +182,9 @@ def calculate_sharpe_ratio(expectancy, variance):
 class Simulator:
 
     def __init__(self, strategy_instance, metadata=None):
-        self.trading_strategy = strategy_instance
+        self.strategy_instance = strategy_instance
         self.metadata = strategy_instance.metadata if metadata is None else metadata
+        self.starting_cash = 10000
 
     def simulate(self):
         """
@@ -210,17 +211,18 @@ class Simulator:
                     variance
         """
 
-        price_data = self.trading_strategy.price_data
-        trading_signals = self.trading_strategy.trading_signals
+        price_data = self.strategy_instance.price_data
+        trading_signals = self.strategy_instance.trading_signals
 
         # numba needs numpy arrays
+        # TODO: validate that price_data and trading_signals are numpy arrays
         price_data_np = price_data.to_numpy()
         trading_signals_np = trading_signals
 
         result = self.calculate_trades_win_loss(price_data_np, trading_signals_np)
         return result
     
-    def calculate_trades_win_loss(self, price_data, trading_signals, starting_cash=10000) -> dict:
+    def calculate_trades_win_loss(self) -> dict:
         """
         Calculates the win/loss percentages and dollar amounts for a given set of trading signals and price data.
 
@@ -229,35 +231,23 @@ class Simulator:
             trading_signals: A matching array of indicators to reflect a trading strategy
             starting_cash: The starting value for the portfolio
         Returns:
-            win_loss[]: Holds trade gain/loss in dollar amounts
-            win_loss_percents[]: Holds the portfolio percent change as a result of closing trades
-            portfolio_values[]: Holds the portfolio value and is only be updated on closing trades
+            dict: A dictionary containing the following arrays:
+                win_loss[]: Holds trade gain/loss in dollar amounts
+                win_loss_percents[]: Holds the portfolio percent change as a result of closing trades
+                portfolio_values[]: Holds the portfolio value and is only be updated on closing trades
         """
+
+        # localize variables
+        starting_cash = self.starting_cash
+        price_data = self.strategy_instance.price_data
+        trading_signals = self.strategy_instance.trading_signals
 
         if starting_cash < 0:
             raise ValueError("starting_cash must be greater than 0")
         if len(price_data) != len(trading_signals):
             raise ValueError("price_data and trading_signals must be the same size")
 
+        # return dict of arrays -> win_loss, win_loss_percents, portfolio_values
         output = win_loss_loop(trading_signals, price_data, starting_cash)
-
-        # win_loss = np.zeros_like(price_data)
-        # win_loss_percents = np.zeros_like(price_data)
-        # portfolio_values = np.empty_like(price_data)
-
-        # # start the portfolio_values at starting_cash
-        # portfolio_values[0] = starting_cash
-
-        # # call numba function to efficiently iterate through and compute array values
-        # win_loss_loop(trading_signals, price_data, portfolio_values, win_loss_percents, win_loss)
-
-        # # return all three new arrays
-        # output = {
-        #     "win_loss": win_loss,
-        #     "win_loss_percents": win_loss_percents,
-        #     "portfolio_values": portfolio_values
-        # }
-
-        # arrays = [win_loss, win_loss_percents, portfolio_values]
 
         return output

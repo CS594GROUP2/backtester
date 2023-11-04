@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from core.data import Data
 from core.signals import SignalGenerator
-from core.simulator import Simulator
+from core.Simulator import Simulator
 
 # DATA
 # create an instance of the Data class
@@ -36,6 +36,7 @@ simulator.simulate()
 simulation_output = simulator.get_results()
 
 print(simulation_output.keys())
+print(simulator.stats)
 # print(simulation_output['stats'])
 # print(simulation_output['input']['price_data'])
 

@@ -34,7 +34,7 @@ def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
 
     return output
 
-@nb.njit
+@nb.jit(nopython=True)
 def calculate_expectancy(win_loss_percents) -> float:
     """
     Calculate the expectancy of a list of win-loss percentages.
@@ -65,7 +65,7 @@ def calculate_expectancy(win_loss_percents) -> float:
 
     return np.float64(expectancy)
 
-@nb.njit
+@nb.jit(nopython=True)
 def calculate_variance(expectancy, win_loss_percents) -> float:
     """
     Calculate the variance of a list of win-loss percentages.
@@ -95,33 +95,6 @@ def calculate_variance(expectancy, win_loss_percents) -> float:
 
     return np.float64(variance)
 
-# @nb.njit
-# def calculate_sharpe_ratio(expectancy, variance) -> float:
-#     """
-#     Calculate the Sharpe Ratio for a given investment or trading strategy.
-
-#     The Sharpe Ratio assesses the risk-adjusted returns of an investment or trading strategy.
-#     It is calculated as the difference between the expected return and the risk-free rate, divided by the standard deviation of returns.
-
-#     Parameters:
-#     expectancy (float): the mean or expectancy of the win-loss percentages.
-#     variance (float): The variance of returns or portfolio values.
-
-#     Returns:
-#     float: The calculated Sharpe Ratio, which measures risk-adjusted performance, or None if the input(s) is empty.
-#     """
-
-#     if not expectancy or not variance:
-#         return None
-
-#     # ^TNX represents the 10-year US Treasury yield
-#     treasury = yf.Ticker('^TNX')
-#     treaury_df = treasury.history(interval='1m', period='1d')
-#     risk_free_rate = treaury_df['Close'].iloc[-1] / 100
-
-#     sharpe_ratio = (expectancy - risk_free_rate) / np.sqrt(variance)
-
-#     return np.float64(sharpe_ratio)
 @nb.jit(nopython=True)
 def calculate_sharpe_ratio(expectancy, variance, risk_free_rate):
     """
@@ -194,30 +167,21 @@ class Simulator:
         self.metadata = strategy_instance.metadata if metadata is None else metadata
         self.starting_cash = 10000
         self.win_loss_stats = None
+        self.stats = None
 
     def simulate(self):
         """
         Simulates a trading strategy using the given trading signals and price data.
-        THis function uses the trading signals and price data to calculate the
+        This function uses the trading signals and price data to calculate the
         portfolio values, win/loss percentages, and win/loss values.
 
         Returns:
-            a list containing the following
-                a nested dataframe containing the following:
-                    win_loss_np
-                    win_loss_percents_np
-                    portfolio_values_np
-                another nested dataframe containing the input to the simulation: 
-                    trading_signals_np
-                    price_data_np
-                another nested dataframe containing the metadata passed in:
-                    metadata
-                a dictionary containing the following:
-                    max_drawdown
-                    ratio_winning_trades
-                    sharpe ratio
-                    expectancy 
-                    variance
+            dict: A dictionary containing the following arrays:
+                max_drawdown: The maximum drawdown for the strategy
+                ratio_winning_trades: The ratio of winning trades for the strategy
+                sharpe_ratio: The Sharpe Ratio for the strategy
+                expectancy: The expectancy for the strategy
+                variance: The variance for the strategy
         """
 
         # generate win loss stats if not already generated
@@ -244,7 +208,9 @@ class Simulator:
             "variance": variance
         }
 
-        return stats
+        self.stats = stats
+
+        return self.stats
     
     def calculate_trades_win_loss(self) -> dict:
         """
@@ -277,3 +243,44 @@ class Simulator:
         self.win_loss_stats = output
 
         return self.win_loss_stats
+    
+    def get_results(self) -> dict:
+        """
+        Returns:
+        A dict containing:
+            a nested dataframe containing the following:
+                win_loss_np
+                win_loss_percents_np
+                portfolio_values_np
+            a nested dataframe containing the input to the simulation: 
+                trading_signals_np
+                price_data_np
+            a dict containing the metadata passed in:
+                metadata
+            a dict containing the following:
+                max_drawdown
+                ratio_winning_trades
+                sharpe ratio
+                expectancy 
+                variance
+        """
+
+        input_df = pd.DataFrame({
+            "trading_signals": self.strategy_instance.trading_signals,
+            "price_data": self.strategy_instance.price_data
+        })
+
+        win_loss_df = pd.DataFrame({
+            "win_loss": self.win_loss_stats["win_loss"],
+            "win_loss_percents": self.win_loss_stats["win_loss_percents"],
+            "portfolio_values": self.win_loss_stats["portfolio_values"]
+        })
+
+        output = {
+            "input": input_df,
+            "win_loss": win_loss_df,
+            "stats": self.stats,
+            "metadata": self.metadata
+        }
+
+        return output

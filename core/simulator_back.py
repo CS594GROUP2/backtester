@@ -1,27 +1,20 @@
-# import yfinance as yf
-# from .data import Data
-# import numpy as np
-# import pandas as pd
-# import numba as nb
-# import os
-# import sys
-# sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
+import yfinance as yf
+from .data import Data
 import numpy as np
 import pandas as pd
-import numba as nb 
+import numba as nb
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 
 # loops through price_data and trading_signals, performing calculations and updating other 3 arrays
 @nb.jit(nopython=True)
-def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
-    win_loss = np.zeros_like(price_data)
-    win_loss_percents = np.zeros_like(price_data)
-    portfolio_values = np.empty_like(price_data)
+def win_loss_loop(trading_signals, price_data, portfolio_values, win_loss_percents, win_loss):
 
-    portfolio_values[0] = starting_cash # setting starting portfolio value
-
+    # iterate through trading signals
     for i in range(trading_signals.size):
+        # Forward filling portfolio_values:
         if i > 0:
             portfolio_values[i] = portfolio_values[i - 1]
 
@@ -34,16 +27,8 @@ def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
         if trading_signals[i] < 0:
             win_loss_percents[i] = price_data[i] / entry_price
             portfolio_values[i] = win_loss_percents[i] * entry_portfolio_value
-            win_loss_percents[i] -= 1
+            win_loss_percents[i] -= 1  # subtract to get absolute change
             win_loss[i] = portfolio_values[i] - entry_portfolio_value
-        
-    output = {
-        "win_loss": win_loss,
-        "win_loss_percents": win_loss_percents,
-        "portfolio_values": portfolio_values
-    }
-
-    return output
 
 
 @nb.jit(nopython=True)
@@ -146,7 +131,8 @@ def calculate_variance(expectancy, win_loss_percents):
     if number_of_trades == 0:
         return None
 
-    variance = np.sum((non_zero_percentages - expectancy) ** 2) / number_of_trades
+    variance = np.sum((non_zero_percentages - expectancy)
+                      ** 2) / number_of_trades
 
     return np.float64(variance)
 
@@ -181,15 +167,20 @@ def calculate_sharpe_ratio(expectancy, variance):
 
 class Simulator:
 
-    def __init__(self, strategy_instance, metadata=None):
-        self.trading_strategy = strategy_instance
-        self.metadata = strategy_instance.metadata if metadata is None else metadata
+    def __init__(self) -> None:
+        self.win_loss = None
+        self.win_loss_percents = None
+        self.portfolio_values = None
+        self.stats = {}
+        self.metadata = {}
+        self.trading_signals = None
 
-    def simulate(self):
-        """
-        Simulates a trading strategy using the given trading signals and price data.
-        THis function uses the trading signals and price data to calculate the
-        portfolio values, win/loss percentages, and win/loss values.
+    def simulate(self, trading_strategy, metadata=None):
+        """Simulates a trading strategy using the given trading signals and price data.
+
+        Args:
+            trading_signals_np (np.array): A numpy array of trading signals.
+            price_data_np (np.array): A numpy array of price data.
 
         Returns:
             a list containing the following
@@ -208,56 +199,97 @@ class Simulator:
                     sharpe ratio
                     expectancy 
                     variance
+
+                """
+        price_data_np = trading_strategy.price_data
+        trading_signals_np = trading_strategy.trading_signals
+
+        if not metadata:
+            self.metadata = trading_strategy.metadata
+        else:
+            self.metadata = trading_strategy.metadata
+            self.metadata.update(metadata)
+
+        input_df = pd.DataFrame({
+            'trading_signals': trading_signals_np,
+            'price_data': price_data_np
+        })
+
+        simulator_instance = Simulator()
+
+        win_loss_np, win_loss_percents_np, portfolio_values_np = simulator_instance.calculate_trades_win_loss(
+            price_data_np, trading_signals_np)
+
+        self.win_loss = win_loss_np
+        self.win_loss_percents = win_loss_percents_np
+        self.portfolio_values = portfolio_values_np
+
+        win_loss_df = pd.DataFrame({
+            'win_loss': win_loss_np,
+            'win_loss_percents': win_loss_percents_np,
+            'portfolio_values': portfolio_values_np
+        })
+
+        expectancy = calculate_expectancy(self.win_loss_percents)
+
+        variance = calculate_variance(expectancy, self.win_loss_percents)
+
+        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance)
+
+        max_drawdown = calculate_max_drawdown(self.win_loss_percents)
+
+        ratio_winning_trades = calculate_ratio_winning_trades(
+            self.win_loss_percents)
+
+        # packcage the stats into a dictionary
+        stats = {
+            'max_drawdown': max_drawdown,
+            'ratio_winning_trades': ratio_winning_trades,
+            'sharpe_ratio': sharpe_ratio,
+            'expectancy': expectancy,
+            'variance': variance
+        }
+
+        self.stats = stats
+        self.metadata = metadata
+        self.portfolio_values = portfolio_values_np
+        self.win_loss_percents = win_loss_percents_np
+        self.win_loss = win_loss_np
+        self.trading_signals = trading_signals_np
+
+        return None
+
+    def calculate_trades_win_loss(self, price_data, trading_signals, starting_cash=10000):
         """
+            Calculates the win/loss percentages and dollar amounts for a given set of trading signals and price data.
 
-        price_data = self.trading_strategy.price_data
-        trading_signals = self.trading_strategy.trading_signals
-
-        # numba needs numpy arrays
-        price_data_np = price_data.to_numpy()
-        trading_signals_np = trading_signals
-
-        result = self.calculate_trades_win_loss(price_data_np, trading_signals_np)
-        return result
-    
-    def calculate_trades_win_loss(self, price_data, trading_signals, starting_cash=10000) -> dict:
-        """
-        Calculates the win/loss percentages and dollar amounts for a given set of trading signals and price data.
-
-        Args:
-            price_data: An array of price data to calculate the strategy on
-            trading_signals: A matching array of indicators to reflect a trading strategy
-            starting_cash: The starting value for the portfolio
-        Returns:
-            win_loss[]: Holds trade gain/loss in dollar amounts
-            win_loss_percents[]: Holds the portfolio percent change as a result of closing trades
-            portfolio_values[]: Holds the portfolio value and is only be updated on closing trades
+            Args:
+                price_data: An array of price data to calculate the strategy on
+                trading_signals: A matching array of indicators to reflect a trading strategy
+                starting_cash: The starting value for the portfolio
+            Returns:
+                win_loss[]: Holds trade gain/loss in dollar amounts
+                win_loss_percents[]: Holds the portfolio percent change as a result of closing trades
+                portfolio_values[]: Holds the portfolio value and is only be updated on closing trades
         """
 
         if starting_cash < 0:
             raise ValueError("starting_cash must be greater than 0")
         if len(price_data) != len(trading_signals):
-            raise ValueError("price_data and trading_signals must be the same size")
+            raise ValueError(
+                "price_data and trading_signals must be the same size")
 
-        output = win_loss_loop(trading_signals, price_data, starting_cash)
+        win_loss = np.zeros_like(price_data)
+        win_loss_percents = np.zeros_like(price_data)
+        portfolio_values = np.empty_like(price_data)
 
-        # win_loss = np.zeros_like(price_data)
-        # win_loss_percents = np.zeros_like(price_data)
-        # portfolio_values = np.empty_like(price_data)
+        # start the portfolio_values at starting_cash
+        portfolio_values[0] = starting_cash
 
-        # # start the portfolio_values at starting_cash
-        # portfolio_values[0] = starting_cash
+        # call numba function to efficiently iterate through and compute array values
+        win_loss_loop(trading_signals, price_data, portfolio_values, win_loss_percents, win_loss)
 
-        # # call numba function to efficiently iterate through and compute array values
-        # win_loss_loop(trading_signals, price_data, portfolio_values, win_loss_percents, win_loss)
+        # return all three new arrays
+        arrays = [win_loss, win_loss_percents, portfolio_values]
 
-        # # return all three new arrays
-        # output = {
-        #     "win_loss": win_loss,
-        #     "win_loss_percents": win_loss_percents,
-        #     "portfolio_values": portfolio_values
-        # }
-
-        # arrays = [win_loss, win_loss_percents, portfolio_values]
-
-        return output
+        return arrays

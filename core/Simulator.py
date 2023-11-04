@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import numba as nb 
 
+# HELPER FUNCTIONS
 @nb.jit(nopython=True)
 def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
     win_loss = np.zeros_like(price_data)

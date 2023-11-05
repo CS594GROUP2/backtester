@@ -69,6 +69,7 @@ class Data:
         end: The end date for the price data.
         interval: The period (frequency/interval) for the price data.
         ticker: The ticker symbol for the stock.
+        
         Returns:
         A list of Pandas DataFrames containing the price data, with columns:
             Open, High, Low, Close, Volume in the first DataFrame.

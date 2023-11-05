@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import numba as nb 
 
-
-# helper function to loop through random values and fill output array
+# HELPER FUNCTIONS
 @nb.jit(nopython=True)
 def generate_random(size, entp, extp):
     random_signals = np.zeros(shape=size, dtype=np.int8)
@@ -45,11 +44,10 @@ def generate_signals(price_data_np, target_np):
 
 class SignalGenerator:
 
-
-    def __init__(self):
-        self.trading_signals = None
-        self.price_data = None
-        self.metadata = None
+    def __init__(self, price_data, metadata={}):
+        self.price_data : pd.Series = price_data
+        self.metadata : dict = metadata
+        self.trading_signals : np.ndarray = None
 
     def generate_random(self, size, entry_probability, exit_probability) -> np.ndarray:
         """
@@ -71,14 +69,16 @@ class SignalGenerator:
         if exit_probability < 0 or exit_probability > 1:
             raise ValueError("exit_probability must be between 0 and 1")
         
-        self.metadata['random_signals'] = True
+        # update the metadata
+        self.metadata = {
+            "random_signals": True
+        }
 
-        random_signals = generate_random(size, entry_probability, exit_probability)
-        self.trading_signals = random_signals
+        self.trading_signals = generate_random(size, entry_probability, exit_probability)
 
         return self.trading_signals
 
-    def generate_above_below(self, target, hist_data, metadata, column='Close') -> np.ndarray:
+    def generate_above_below(self, target, metadata={}) -> np.ndarray:
         """
         Generates trading signals and stores them in a newly generated numpy array
         a positive trading signal(+1) is generated when the price crosses above the target
@@ -87,55 +87,33 @@ class SignalGenerator:
         
 
         Args:
-        price_data: A Pandas DataFrame containing the price data in OHLCV format note the close will be taken
-        target: A Pandas DataFrame containing the target data crossover values
-        metadata: A Pandas DataFrame containing the metadata for the price data will append the target metadata and return
-
+        target: a Pandas Series containing the target data crossover values
+        metadata: a Dict containing the metadata for the price data, included in get_results()
+        
         Returns:
         a NumPy array of trading signals
         """
 
-        self.metatdata = metadata
+        # validate the price data (defensive programming)
+        if not isinstance(self.price_data, pd.Series):
+            raise ValueError("The price data is not a Pandas Series")
+        
+        # validate the target data
+        if not isinstance(target, pd.Series):
+            raise ValueError("The target data is not a Pandas Series")
+        
+        # update the metadata
+        self.metadata = metadata
 
-        # check if the price data is a dataframe
-        if isinstance(hist_data, pd.DataFrame):
-            # extract the closing column from the price data
-            self.price_data = hist_data[column].to_numpy()
-        # check if the price data is a pandas series
-        elif isinstance(hist_data, pd.Series):
-            self.price_data = hist_data.to_numpy()
-        # check if the price data is already a numpy array
-        elif isinstance(hist_data, np.ndarray):
-            pass
-        # otherwise raise a value error
-        else:
-            raise ValueError("The price data is not a Pandas DataFrame or Numpy Array")
+        # numba only works with numpy arrays
+        price_data_np = self.price_data.to_numpy()
+        target_np = target.to_numpy()
         
-        
-        # validate the target data (must be a Pandas Series or Numpy Array)
-        if isinstance(target, pd.Series):
-            # convert all the NaN values to 0
-            target = target.fillna(0)
-            target = target.to_numpy(dtype=np.int8)
-        elif isinstance(target, np.ndarray):
-            pass
-        else:
-            raise ValueError("The target data is not a Pandas Series or Numpy Array")
-
-        if not isinstance(target, np.ndarray):
-            raise ValueError("The target data is not a Numpy Array")
-        
-
-        # check shape of price data and target data
-        if self.price_data.shape != target.shape:
-            raise ValueError("The price data and target data are not the same shape")
-        
-        above_below_signals = generate_signals(self.price_data, target)
-        self.trading_signals = above_below_signals
+        self.trading_signals = generate_signals(price_data_np, target_np)
 
         return self.trading_signals
 
-    def get_results(self):
+    def get_results(self) -> dict:
         """
         Returns:
         A list containing:
@@ -143,4 +121,11 @@ class SignalGenerator:
         a Numpy array of the price data
         a List of metadata
         """
-        return [self.trading_signals, self.price_data, self.metadata]
+
+        results = {
+            "trading_signals": self.trading_signals,
+            "price_data": self.price_data,
+            "metadata": self.metadata
+        }
+
+        return results

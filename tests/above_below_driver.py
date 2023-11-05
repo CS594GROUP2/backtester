@@ -38,6 +38,9 @@ price_data['Volume'] = np.random.randint(100, 200, size=price_data.shape[0])
 metadata = {'start': price_data.index[0], 'end': price_data.index[-1], 'interval': '1d', 'ticker': 'AAPL', 'indicator': 'SMA', "params": {'length': 20}}
 
 
+print("price data:\n")
+print(price_data)
+
 #construct a signal generator from SignalGenerator in signals.py
 signal_generator = SignalGenerator()
 

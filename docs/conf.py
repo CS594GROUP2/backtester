@@ -1,7 +1,8 @@
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../core'))
+
 
 
 
@@ -20,12 +21,12 @@ release = '0.1.0'
 
 # Add any Sphinx extension module names here, as strings.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.autosummary',
+    'sphinx.ext.autodoc',      # Core Sphinx extension for docstrings
+    'sphinx.ext.autosummary',  # Generates summary tables
+    'sphinx.ext.intersphinx',  # Links to other project's documentation
+    'sphinx.ext.viewcode',     # Adds links to source code
 ]
+
 
 intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs/', None),

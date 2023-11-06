@@ -37,10 +37,28 @@ class TimedeltaConverter:
 
 class Data:
     def __init__(self) -> None:
+        '''
+        Constructor for the Data class.
+
+        Parameters:
+        None
+
+        Returns:
+        None
+        '''
         self.timedelta_converter = TimedeltaConverter()
         self.valid_intervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo']
 
     def get_risk_free_rate(self) -> float:
+        '''
+        gets the most recent risk free rate from Yahoo Finance
+
+        Parameters:
+        None
+
+        Returns:
+        risk_free_rate: float
+        '''
         treasury = yf.Ticker('^TNX')  # ^TNX represents the 10-year US Treasury yield
         treaury_df = treasury.history(interval='1m', period='1d')
         risk_free_rate = treaury_df['Close'].iloc[-1] / 100
@@ -64,7 +82,7 @@ class Data:
         """
         Gets price data for a given symbol, start and end date, and period.
 
-        Args:
+        Parameters:
         start: The start date for the price data.
         end: The end date for the price data.
         interval: The period (frequency/interval) for the price data.

@@ -22,7 +22,7 @@ extensions = [
 intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'yfinance': ('https://pypi.org/project/yfinance/', None),
+    # 'yfinance': ('https://pypi.org/project/yfinance/', None),
     'pyta': ('https://pyta.readthedocs.io/en/latest/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None)
 }

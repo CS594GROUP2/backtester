@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from core.data import Data
 from core.signals import SignalGenerator
-from core.Simulator import Simulator
+from core.simulator import Simulator
 
 # create an instance of the Data class
 data_grabber = Data()

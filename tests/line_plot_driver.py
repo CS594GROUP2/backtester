@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from core.signals import SignalGenerator
-from core.Simulator import Simulator
+from core.simulator import Simulator
 from core.visualizer import Visualizer
 
 # import stock data from csv file

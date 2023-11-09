@@ -2,12 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class BubblePlotGenerator:
-    def __init__(self, simulation):
+    def __init__(self, simulation, dates):
         # Get win_loss_df
         self.win_loss_df = simulation["win_loss"]
 
         # Extract timestamps for the X-axis
-        self.timestamps = self.win_loss_df.index
+        # self.timestamps = self.win_loss_df.index
+        self.timestamps = dates
 
         self.win_loss_percents_np = self.win_loss_df['win_loss_percents'].values
         self.portfolio_values_np = self.win_loss_df['portfolio_values'].values

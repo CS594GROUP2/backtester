@@ -34,5 +34,6 @@ bubble_sim.simulate()
 bubble_output = bubble_sim.get_results()
 
 # Generate the bubble plot
-bubble_plot_generator = BubblePlotGenerator(bubble_output)
+# bubble_plot_generator = BubblePlotGenerator(bubble_output)
+bubble_plot_generator = BubblePlotGenerator(bubble_output, price_data.index)
 bubble_plot_generator.generate_bubble_plot()

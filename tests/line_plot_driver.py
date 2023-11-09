@@ -9,6 +9,7 @@ current_dir = os.getcwd()
 parent_directory = os.path.join(current_dir, '..')
 file_name = 'AAPL.csv'
 file_path = os.path.join(parent_directory, file_name)
+
 data = pd.read_csv(file_path)
 
 metadata = data.loc[:, "Date"]

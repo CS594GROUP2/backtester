@@ -1,10 +1,15 @@
+import os
 import pandas as pd
 from core.signals import SignalGenerator
 from core.Simulator import Simulator
 from core.visualizer import Visualizer
 
 # import stock data from csv file
-data = pd.read_csv("AAPL.csv")
+current_dir = os.getcwd()
+parent_directory = os.path.join(current_dir, '..')
+file_name = 'AAPL.csv'
+file_path = os.path.join(parent_directory, file_name)
+data = pd.read_csv(file_path)
 
 metadata = data.loc[:, "Date"]
 

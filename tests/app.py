@@ -17,6 +17,7 @@ data_grabber = Data()
 price_data = pd.read_csv('AAPL.csv', index_col='Date', parse_dates=True)
 metadata = {'start': price_data.index[0], 'end': price_data.index[-1], 'interval': '1d', 'ticker': 'AAPL', 'indicator': 'SMA', "params": {'length': 20}}
 ma_20 = pta.sma(price_data['Close'], 20)
+risk_free_rate = 0.04 # 4% risk free rate
 
 
 # SIGNAL GENERATOR
@@ -31,7 +32,7 @@ strategy_output = strategy_instance.get_results()
 
 
 # SIMULATOR
-simulator = Simulator(strategy_instance)
+simulator = Simulator(strategy_instance, risk_free_rate)
 simulator.simulate()
 simulation_output = simulator.get_results()
 

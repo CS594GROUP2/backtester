@@ -163,8 +163,9 @@ def calculate_ratio_winning_trades(win_loss_percents_np) -> float:
 
 class Simulator:
 
-    def __init__(self, strategy_instance, metadata=None):
+    def __init__(self, strategy_instance, risk_free_rate, metadata=None):
         self.strategy_instance = strategy_instance
+        self.risk_free_rate = risk_free_rate
         self.metadata = strategy_instance.metadata if metadata is None else metadata
         self.starting_cash = 10000
         self.win_loss_stats = None
@@ -197,7 +198,7 @@ class Simulator:
         # generate stats
         expectancy = calculate_expectancy(win_loss_percents)
         variance = calculate_variance(expectancy, win_loss_percents)
-        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance, 0.035) # risk_free_rate = 0.015  # 1.5% annual risk-free rate
+        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance, self.risk_free_rate)
         max_drawdown = calculate_max_drawdown(win_loss_percents)
         ratio_winning_trades = calculate_ratio_winning_trades(win_loss_percents)
 

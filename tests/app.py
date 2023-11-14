@@ -24,7 +24,8 @@ risk_free_rate = 0.04 # 4% risk free rate
 #construct a signal generator from SignalGenerator in signals.py
 strategy_instance = SignalGenerator(price_data['Close'])
 # signal_generator.generate_random(100, 0.5, 0.5)
-strategy_instance.generate_above_below(ma_20, metadata)
+#strategy_instance.generate_above_below(ma_20, metadata)
+strategy_instance.generate_crossover(ma_20, price_data['Close'], metadata)
 strategy_output = strategy_instance.get_results()
 
 # print("strategy output:\n")

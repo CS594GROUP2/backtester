@@ -286,3 +286,13 @@ class Simulator:
         }
 
         return output
+
+    @nb.jit(parallel=True)
+    def simulate_all(self, strategy_instances):
+        result = pd.Series()
+        for i in nb.prange(len(strategy_instances)):
+            # Perform computation in parallel
+            result[i] = win_loss_loop(strategy_instances[i].trading_signals,
+                                      strategy_instances[i].price_data.to_numpy(),
+                                      self.starting_cash)["portfolio_values"]
+        return result

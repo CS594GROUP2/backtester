@@ -41,7 +41,13 @@ results = simulator.simulate_all_helper(strategy_instances, index)
 
 print(results)
 
-exectution_time = timeit.timeit(lambda: simulator.simulate_all_helper(strategy_instances, index), number=1000)
+number = 10000
+
+exectution_time = timeit.timeit(lambda: simulator.simulate_all_helper(strategy_instances, index), number=number)
 
 
 print(f"total execution time: {exectution_time} seconds")
+
+print(f"average execution time: {exectution_time / 1000} seconds")
+
+print(f"execution time per strategy: {exectution_time / 1000 / num_strategies} seconds")

@@ -1,6 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import timeit
 
 import pandas as pd
 import pandas_ta as pta
@@ -31,11 +32,16 @@ for i in range(num_strategies):
     strategy_instances[i] = SignalGenerator(price_data['Close'])
     strategy_instances[i].generate_random(data_length, 0.08, 0.08)
 
-
+index = pd.Index(range(num_strategies))
 
 # SIMULATOR
-simulator = Simulator(strategy_instances[0])
-results = simulator.simulate_all(strategy_instances)
+simulator = Simulator(strategy_instances[0], 0.04)
+results = simulator.simulate_all_helper(strategy_instances, index)
 
 
-print("done")
+print(results)
+
+exectution_time = timeit.timeit(lambda: simulator.simulate_all_helper(strategy_instances, index), number=1000)
+
+
+print(f"total execution time: {exectution_time} seconds")

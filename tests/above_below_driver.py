@@ -23,7 +23,7 @@ ticker = 'AAPL'
 
 data = data_grabber.get_price_data(start, end, interval, ticker)
 
-price_data = data[0]
+print(data)
 
 
 
@@ -64,7 +64,7 @@ trading_signals_df.index = price_data.index
 
  """
 
-
+""" 
 
 # call the simulator to simulate the trading strategy
 simulator = Simulator()
@@ -75,7 +75,7 @@ print(simulator.win_loss_percents)
 
 # print the stats from the simulation
 print(simulator.stats)
-
+ """
 """ 
 # use matplotlib to plot the price data and the moving average overlayed on one chart
 fig, ax = plt.subplots(figsize=(16,9))

@@ -13,6 +13,8 @@ from core.simulator import Simulator
 # import the BubblePlotGenerator class
 from core.generate_bubble_plot import BubblePlotGenerator
 
+from core.visualize_1d_strategy import Visualize1DStrategy
+
 # DATA
 # create an instance of the Data class
 data_grabber = Data()
@@ -29,11 +31,19 @@ strategy_instance.generate_above_below(ma_20, metadata)
 strategy_output = strategy_instance.get_results()
 
 
-bubble_sim = Simulator(strategy_instance, metadata)
-bubble_sim.simulate()
-bubble_output = bubble_sim.get_results()
+simulator_instance = Simulator(strategy_instance, metadata)
+simulator_instance.simulate()
+
+# Create Visualize1DStrategy instance and visualize
+visualizer = Visualize1DStrategy(simulator_instance)
+visualizer.visualize()
+
+########### Previous Sim #########################
+# bubble_sim = Simulator(strategy_instance, metadata)
+# bubble_sim.simulate()
+# bubble_output = bubble_sim.get_results()
 
 # Generate the bubble plot
 # bubble_plot_generator = BubblePlotGenerator(bubble_output)
-bubble_plot_generator = BubblePlotGenerator(bubble_output, price_data.index)
-bubble_plot_generator.generate_bubble_plot()
+# bubble_plot_generator = BubblePlotGenerator(bubble_output, price_data.index)
+# bubble_plot_generator.generate_bubble_plot()

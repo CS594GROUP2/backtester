@@ -6,7 +6,6 @@ import timeit
 import pandas as pd
 import pandas_ta as pta
 import numpy as np
-import matplotlib.pyplot as plt
 
 from core.data import Data
 from core.signals import SignalGenerator
@@ -35,15 +34,16 @@ for i in range(num_strategies):
 index = pd.Index(range(num_strategies))
 
 # SIMULATOR
+desired_statistic = "sharpe_ratio"
 simulator = Simulator(strategy_instances[0], 0.04)
-results = simulator.simulate_all_helper(strategy_instances, index)
+results = simulator.simulate_all_helper(strategy_instances, index, desired_statistic)
 
 
 print(results)
 
 number = 10000
 
-exectution_time = timeit.timeit(lambda: simulator.simulate_all_helper(strategy_instances, index), number=number)
+exectution_time = timeit.timeit(lambda: simulator.simulate_all_helper(strategy_instances, index, desired_statistic), number=number)
 
 
 print(f"total execution time: {exectution_time} seconds")

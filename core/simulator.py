@@ -309,7 +309,23 @@ class Simulator:
         return output
     
 
-    def simulate_all_helper(self, strategy_instances, index):
+    def simulate_all(self, strategy_instances, index, desired_statistic="max_drawdown"):
+        """
+                Simulates multiple trading strategies using the given trading signals and price data
+
+                Args:
+                    strategy_instances: an array of SignalGenerator objects
+                    index: index for the strategy_instances to be returned
+                    desired_statistic: keyword argument for which statistic will be calculated
+                Returns:
+                    pandas.series: A series containing the requested statistic that reflects the strategy results,
+                    and an index for the statistics
+                """
+        valid_statistics = ["max_drawdown", "ratio_winning_trades", "expectancy", "variance", "sharpe_ratio"]
+
+        if desired_statistic not in valid_statistics:
+            raise TypeError(f"Invalid desired_statistic: {desired_statistic}")
+
         data_length = len(strategy_instances[0].price_data)
 
         # Initialize 2D NumPy arrays for price_datas and trading_signalss
@@ -327,7 +343,8 @@ class Simulator:
             trading_signalss[i] = strategy_instance.trading_signals
 
         # Perform the simulation in parallel
-        results = simulate_all_parallel(price_datas, trading_signalss, win_losses, win_loss_percents, portfolios_values)
+        results = simulate_all_parallel(price_datas, trading_signalss, win_losses, win_loss_percents,
+                                        portfolios_values, desired_statistic, self.risk_free_rate, self.starting_cash)
 
         return pd.Series(results, index=index)
 
@@ -337,7 +354,8 @@ import numpy as np
 
 
 @jit(parallel=True, nopython=True)
-def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_percents, portfolios_values, starting_cash=1000, desired_statistic="max_drawdown"):
+def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_percents, portfolios_values,
+                          desired_statistic, risk_free_rate, starting_cash=1000):
     results = np.empty(len(price_data), dtype=np.float64)
 
     for i in prange(len(price_data)):
@@ -346,24 +364,27 @@ def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_perc
         # and portfolios_values with the appropriate values.
         win_loss_helper(trading_signals[i], price_data[i], win_losses[i], win_loss_percents[i], portfolios_values[i], starting_cash)
 
-        # Assuming calculate_max_drawdown and win_loss_loop are compatible with Numba's nopython mode.
+        win_loss_percents[i, :] = win_loss_loop(trading_signals[i], price_data[i], starting_cash)[1][1]
+
+        # store the desired statistic in the results array:
         if desired_statistic == "max_drawdown":
-            win_loss_percents[i, :] = win_loss_loop(trading_signals[i], price_data[i], starting_cash)[1][1]
             results[i] = calculate_max_drawdown(win_loss_percents[i, :])
+
+        elif desired_statistic == "ratio_winning_trades":
+            results[i] = calculate_ratio_winning_trades(win_loss_percents[i, :])
+
+        elif desired_statistic == "expectancy":
+            results[i] = calculate_expectancy(win_loss_percents[i, :])
+
+        elif desired_statistic == "variance":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            results[i] = calculate_variance(expectancy, win_loss_percents[i, :])
+
+        elif desired_statistic == "sharpe_ratio":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            variance = calculate_variance(expectancy, win_loss_percents[i, :])
+            results[i] = (expectancy - risk_free_rate) / np.sqrt(variance)
 
     return results
 
         
-
-
-""" 
-    @nb.jit(parallel=True)
-    def simulate_all(self, strategy_instances):
-        result = pd.Series()
-        for i in nb.prange(len(strategy_instances)):
-            # Perform computation in parallel
-            result[i] = win_loss_loop(strategy_instances[i].trading_signals,
-                                      strategy_instances[i].price_data.to_numpy(),
-                                      self.starting_cash)["portfolio_values"]
-        return result
- """

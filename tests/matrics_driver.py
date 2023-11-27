@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from core.matrics import *
+from fasttrader.matrics import *
 
 win_loss_percents = np.array([0.1, -0.2, 0.05, 1, 0.15, -0.1, -1, 0.2], dtype=np.float64)
 

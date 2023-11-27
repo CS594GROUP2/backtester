@@ -6,12 +6,12 @@ import pandas as pd
 import pandas_ta as pta
 import matplotlib.pyplot as plt
 
-from core.data import Data
-from core.signals import SignalGenerator
-from core.simulator import Simulator
+from fasttrader.data import Data
+from fasttrader.signals import SignalGenerator
+from fasttrader.simulator import Simulator
 
 # import the BubblePlotGenerator class
-from core.generate_bubble_plot import BubblePlotGenerator
+from fasttrader.generate_bubble_plot import BubblePlotGenerator
 
 # DATA
 # create an instance of the Data class

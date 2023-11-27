@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from core import Data
+from fasttrader import Data
 
 @pytest.fixture
 def data_instance():

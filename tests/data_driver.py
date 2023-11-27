@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import pandas as pd
-from core import Data
+from fasttrader import Data
 
 def main():
     print("Welcome to the Stock Price Data Retrieval Tool!")

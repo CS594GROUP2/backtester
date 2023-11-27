@@ -71,6 +71,14 @@ class Visualizer:
         plt.show()
 
     def generate_bubble_plot(self, price_data: pd.Series, win_loss_percents):
+        """
+                Displays a bubble plot that represents the results of a given trading strategy, with bubbles to 
+                represent the success of each trade made by the strategy. 
+                Args:
+                    price_data: A Pandas DataFrame containing the price data in OHLCV format
+                    win_loss_percents: A NumPy array containing the win/loss percentages for the strategy
+        """
+        
         # Separate winning and losing trades
         winning_trades = [perc > 0 for perc in win_loss_percents]
         losing_trades = [perc < 0 for perc in win_loss_percents]

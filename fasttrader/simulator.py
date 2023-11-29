@@ -1,8 +1,44 @@
 import numpy as np
 import pandas as pd
 import numba as nb 
+from numba import jit, prange
+
 
 # HELPER FUNCTIONS
+@jit(parallel=True, nopython=True)
+def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_percents, portfolios_values, desired_statistic, risk_free_rate, starting_cash=1000):
+    results = np.empty(len(price_data), dtype=np.float64)
+
+    for i in prange(len(price_data)):
+        # Call a helper function to perform the individual calculations.
+        # This function should populate the ith row of win_losses, win_loss_percents,
+        # and portfolios_values with the appropriate values.
+        win_loss_helper(trading_signals[i], price_data[i], win_losses[i], win_loss_percents[i], portfolios_values[i], starting_cash)
+
+        win_loss_percents[i, :] = win_loss_loop(trading_signals[i], price_data[i], starting_cash)[1][1]
+
+        # store the desired statistic in the results array:
+        if desired_statistic == "max_drawdown":
+            results[i] = calculate_max_drawdown(win_loss_percents[i, :])
+
+        elif desired_statistic == "ratio_winning_trades":
+            results[i] = calculate_ratio_winning_trades(win_loss_percents[i, :])
+
+        elif desired_statistic == "expectancy":
+            results[i] = calculate_expectancy(win_loss_percents[i, :])
+
+        elif desired_statistic == "variance":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            results[i] = calculate_variance(expectancy, win_loss_percents[i, :])
+
+        elif desired_statistic == "sharpe_ratio":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            variance = calculate_variance(expectancy, win_loss_percents[i, :])
+            results[i] = (expectancy - risk_free_rate) / np.sqrt(variance)
+
+    return results
+
+
 @nb.jit(nopython=True)
 def win_loss_helper(trading_signals, price_data, win_loss, win_loss_percents, portfolio_values, starting_cash=1000) :
     for i in range(trading_signals.size):
@@ -262,8 +298,9 @@ class Simulator:
             raise ValueError("price_data and trading_signals must be the same size")
 
         # return dict of arrays -> win_loss, win_loss_percents, portfolio_values
-        output = win_loss_loop(trading_signals, price_data, starting_cash)
-        self.win_loss_stats = output
+        # the output of win_loss_loop is a tuple of the dict and a list of the arrays
+        outputs = win_loss_loop(trading_signals, price_data, starting_cash)
+        self.win_loss_stats = outputs[0] # use the dict
 
         return self.win_loss_stats
     
@@ -347,44 +384,3 @@ class Simulator:
                                         portfolios_values, desired_statistic, self.risk_free_rate, self.starting_cash)
 
         return pd.Series(results, index=index)
-
-    
-from numba import jit, prange
-import numpy as np
-
-
-@jit(parallel=True, nopython=True)
-def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_percents, portfolios_values,
-                          desired_statistic, risk_free_rate, starting_cash=1000):
-    results = np.empty(len(price_data), dtype=np.float64)
-
-    for i in prange(len(price_data)):
-        # Call a helper function to perform the individual calculations.
-        # This function should populate the ith row of win_losses, win_loss_percents,
-        # and portfolios_values with the appropriate values.
-        win_loss_helper(trading_signals[i], price_data[i], win_losses[i], win_loss_percents[i], portfolios_values[i], starting_cash)
-
-        win_loss_percents[i, :] = win_loss_loop(trading_signals[i], price_data[i], starting_cash)[1][1]
-
-        # store the desired statistic in the results array:
-        if desired_statistic == "max_drawdown":
-            results[i] = calculate_max_drawdown(win_loss_percents[i, :])
-
-        elif desired_statistic == "ratio_winning_trades":
-            results[i] = calculate_ratio_winning_trades(win_loss_percents[i, :])
-
-        elif desired_statistic == "expectancy":
-            results[i] = calculate_expectancy(win_loss_percents[i, :])
-
-        elif desired_statistic == "variance":
-            expectancy = calculate_expectancy(win_loss_percents[i, :])
-            results[i] = calculate_variance(expectancy, win_loss_percents[i, :])
-
-        elif desired_statistic == "sharpe_ratio":
-            expectancy = calculate_expectancy(win_loss_percents[i, :])
-            variance = calculate_variance(expectancy, win_loss_percents[i, :])
-            results[i] = (expectancy - risk_free_rate) / np.sqrt(variance)
-
-    return results
-
-        

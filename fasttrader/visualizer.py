@@ -7,8 +7,7 @@ class Visualizer:
     def __init__(self) -> None:
         pass
 
-    def visualize_strategy(self, price_data, trading_signals,
-                           win_loss_percents, portfolio_values, column_index='Close'):
+    def visualize_strategy(self, price_data, trading_signals, win_loss_percents, portfolio_values, column_index='Close'):
         self.generate_line_plot(price_data, portfolio_values, trading_signals, column_index)
         self.generate_bubble_plot(price_data, win_loss_percents)
 
@@ -41,8 +40,7 @@ class Visualizer:
 
         # graph normalized portfolio values to compare to price_data:
         normalized_portfolio_values = (portfolio_values / portfolio_values[0]) * price_data_column[0]
-        plt.plot(price_data.index, normalized_portfolio_values,
-                              label='Normalized Portfolio Value', color='green')
+        plt.plot(price_data.index, normalized_portfolio_values, label='Normalized Portfolio Value', color='green')
 
         # create a list of dates to match the positive and negative trading signals:
         buy_dates = []

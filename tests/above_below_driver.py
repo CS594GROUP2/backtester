@@ -7,9 +7,9 @@ import numpy as np
 import pandas_ta as pta
 import matplotlib.pyplot as plt
 
-from core.data import Data
-from core.signals import SignalGenerator
-from core.simulator import Simulator
+from fasttrader.data import Data
+from fasttrader.signals import SignalGenerator
+from fasttrader.simulator import Simulator
 
 # create an instance of the Data class
 data_grabber = Data()

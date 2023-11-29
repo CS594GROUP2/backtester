@@ -1,8 +1,13 @@
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 import pandas as pd
-from core.signals import SignalGenerator
-from core.simulator import Simulator
-from core.visualizer import Visualizer
-from core.data import Data
+
+from fasttrader.signals import SignalGenerator
+from fasttrader.simulator import Simulator
+from fasttrader.visualizer import Visualizer
+from fasttrader.data import Data
 
 # fetch some historical price data
 data_grabber = Data()

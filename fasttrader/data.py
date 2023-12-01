@@ -117,7 +117,7 @@ class Data:
         metadata = pd.DataFrame(index=[0], columns=['Symbol', 'interval', 'Start', 'End'])
 
         # Store the metadata into the new dataframe.    
-        metadata['Symbol'] = ticker.info.get('symbol')
+        metadata['Symbol'] = ticker
         metadata["interval"] = interval
         metadata["Start"] = start
         metadata["End"] = end

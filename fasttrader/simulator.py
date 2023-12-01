@@ -1,8 +1,63 @@
 import numpy as np
 import pandas as pd
 import numba as nb 
+from numba import jit, prange
+
 
 # HELPER FUNCTIONS
+@jit(parallel=True, nopython=True)
+def simulate_all_parallel(price_data, trading_signals, win_losses, win_loss_percents, portfolios_values, desired_statistic, risk_free_rate, starting_cash=1000):
+    results = np.empty(len(price_data), dtype=np.float64)
+
+    for i in prange(len(price_data)):
+        # Call a helper function to perform the individual calculations.
+        # This function should populate the ith row of win_losses, win_loss_percents,
+        # and portfolios_values with the appropriate values.
+        win_loss_helper(trading_signals[i], price_data[i], win_losses[i], win_loss_percents[i], portfolios_values[i], starting_cash)
+
+        win_loss_percents[i, :] = win_loss_loop(trading_signals[i], price_data[i], starting_cash)[1][1]
+
+        # store the desired statistic in the results array:
+        if desired_statistic == "max_drawdown":
+            results[i] = calculate_max_drawdown(win_loss_percents[i, :])
+
+        elif desired_statistic == "ratio_winning_trades":
+            results[i] = calculate_ratio_winning_trades(win_loss_percents[i, :])
+
+        elif desired_statistic == "expectancy":
+            results[i] = calculate_expectancy(win_loss_percents[i, :])
+
+        elif desired_statistic == "variance":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            results[i] = calculate_variance(expectancy, win_loss_percents[i, :])
+
+        elif desired_statistic == "sharpe_ratio":
+            expectancy = calculate_expectancy(win_loss_percents[i, :])
+            variance = calculate_variance(expectancy, win_loss_percents[i, :])
+            results[i] = (expectancy - risk_free_rate) / np.sqrt(variance)
+
+    return results
+
+
+@nb.jit(nopython=True)
+def win_loss_helper(trading_signals, price_data, win_loss, win_loss_percents, portfolio_values, starting_cash=1000) :
+    for i in range(trading_signals.size):
+        if i > 0:
+            portfolio_values[i] = portfolio_values[i - 1]
+
+        # if trading signal is positive, store the entry price and starting portfolio value
+        if trading_signals[i] > 0:
+            entry_price = price_data[i]
+            entry_portfolio_value = portfolio_values[i]
+
+        # if trading signal is negative, compare the entry and exit prices and portfolio values and store in arrays
+        if trading_signals[i] < 0:
+            win_loss_percents[i] = price_data[i] / entry_price
+            portfolio_values[i] = win_loss_percents[i] * entry_portfolio_value
+            win_loss_percents[i] -= 1
+            win_loss[i] = portfolio_values[i] - entry_portfolio_value
+
+
 @nb.jit(nopython=True)
 def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
     win_loss = np.zeros_like(price_data)
@@ -33,7 +88,9 @@ def win_loss_loop(trading_signals, price_data, starting_cash) -> dict:
         "portfolio_values": portfolio_values
     }
 
-    return output
+    output_list = [win_loss, win_loss_percents, portfolio_values]
+
+    return output, output_list
 
 @nb.jit(nopython=True)
 def calculate_expectancy(win_loss_percents) -> float:
@@ -163,8 +220,9 @@ def calculate_ratio_winning_trades(win_loss_percents_np) -> float:
 
 class Simulator:
 
-    def __init__(self, strategy_instance, metadata=None):
+    def __init__(self, strategy_instance, risk_free_rate, metadata=None):
         self.strategy_instance = strategy_instance
+        self.risk_free_rate = risk_free_rate
         self.metadata = strategy_instance.metadata if metadata is None else metadata
         self.starting_cash = 10000
         self.win_loss_stats = None
@@ -197,7 +255,7 @@ class Simulator:
         # generate stats
         expectancy = calculate_expectancy(win_loss_percents)
         variance = calculate_variance(expectancy, win_loss_percents)
-        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance, 0.035) # risk_free_rate = 0.015  # 1.5% annual risk-free rate
+        sharpe_ratio = calculate_sharpe_ratio(expectancy, variance, self.risk_free_rate)
         max_drawdown = calculate_max_drawdown(win_loss_percents)
         ratio_winning_trades = calculate_ratio_winning_trades(win_loss_percents)
 
@@ -240,8 +298,9 @@ class Simulator:
             raise ValueError("price_data and trading_signals must be the same size")
 
         # return dict of arrays -> win_loss, win_loss_percents, portfolio_values
-        output = win_loss_loop(trading_signals, price_data, starting_cash)
-        self.win_loss_stats = output
+        # the output of win_loss_loop is a tuple of the dict and a list of the arrays
+        outputs = win_loss_loop(trading_signals, price_data, starting_cash)
+        self.win_loss_stats = outputs[0] # use the dict
 
         return self.win_loss_stats
     
@@ -285,3 +344,43 @@ class Simulator:
         }
 
         return output
+    
+
+    def simulate_all(self, strategy_instances, index, desired_statistic="max_drawdown"):
+        """
+                Simulates multiple trading strategies using the given trading signals and price data
+
+                Args:
+                    strategy_instances: an array of SignalGenerator objects
+                    index: index for the strategy_instances to be returned
+                    desired_statistic: keyword argument for which statistic will be calculated
+                Returns:
+                    pandas.series: A series containing the requested statistic that reflects the strategy results,
+                    and an index for the statistics
+                """
+        valid_statistics = ["max_drawdown", "ratio_winning_trades", "expectancy", "variance", "sharpe_ratio"]
+
+        if desired_statistic not in valid_statistics:
+            raise TypeError(f"Invalid desired_statistic: {desired_statistic}")
+
+        data_length = len(strategy_instances[0].price_data)
+
+        # Initialize 2D NumPy arrays for price_datas and trading_signalss
+        price_datas = np.zeros((len(strategy_instances), data_length), dtype=np.float64)
+        trading_signalss = np.zeros((len(strategy_instances), data_length), dtype=np.float64)
+
+        # Initialize 2D arrays for win_losses, win_loss_percents, and portfolios_values
+        win_losses = np.zeros((len(strategy_instances), data_length), dtype=np.float64)
+        win_loss_percents = np.zeros((len(strategy_instances), data_length), dtype=np.float64)
+        portfolios_values = np.zeros((len(strategy_instances), data_length), dtype=np.float64)
+
+        # Fill the 2D arrays with data
+        for i, strategy_instance in enumerate(strategy_instances):
+            price_datas[i] = strategy_instance.price_data.to_numpy()
+            trading_signalss[i] = strategy_instance.trading_signals
+
+        # Perform the simulation in parallel
+        results = simulate_all_parallel(price_datas, trading_signalss, win_losses, win_loss_percents,
+                                        portfolios_values, desired_statistic, self.risk_free_rate, self.starting_cash)
+
+        return pd.Series(results, index=index)

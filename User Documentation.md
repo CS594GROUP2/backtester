@@ -89,12 +89,12 @@ Ticker -\> String (the ticker symbol of the asset you wish to query
 
 Ex.
 
-Import fasttrader as ft
+import fasttrader as ft \
+Data_grabber = ft.Data()
 
-Import pandas as pd
+or 
 
-#fetch some historical price data
-
+from fasttrader import Data \
 Data_grabber = Data()
 
 start = pd.Timestamp(\'2020-01-01\')
